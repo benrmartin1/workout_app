@@ -11,15 +11,15 @@ var pending_delete_index: int = -1
 
 func _ready() -> void:
 	print("[DEBUG] _ready start")
-	$MainPanel/VBox/Header/AddWorkoutButton.pressed.connect(Callable(self, "_on_AddWorkoutButton_pressed"))
-	$WorkoutEditor/VBoxContainer/DateRow/TodayButton.pressed.connect(Callable(self, "_on_TodayButton_pressed"))
-	$WorkoutEditor/VBoxContainer/ExerciseHeader/AddExerciseButton.pressed.connect(Callable(self, "_on_AddExerciseButton_pressed"))
-	$WorkoutEditor/VBoxContainer/EditorButtonBar/CancelWorkoutButton.pressed.connect(Callable(self, "_on_CancelWorkoutButton_pressed"))
-	$WorkoutEditor/VBoxContainer/EditorButtonBar/SaveWorkoutButton.pressed.connect(Callable(self, "_on_SaveWorkoutButton_pressed"))
-	$WorkoutEditor/VBoxContainer/EditorButtonBar/DeleteWorkoutButton.pressed.connect(Callable(self, "_on_DeleteWorkoutButton_pressed"))
-	$ExerciseEditor/VBoxContainer/ExerciseButtonBar/SaveExerciseButton.pressed.connect(Callable(self, "_on_SaveExerciseButton_pressed"))
-	$ExerciseEditor/VBoxContainer/ExerciseButtonBar/CancelExerciseButton.pressed.connect(Callable(self, "_on_CancelExerciseButton_pressed"))
-	$ConfirmDialog.confirmed.connect(Callable(self, "_on_ConfirmDialog_confirmed"))
+	$AppPanel/MainPanel/VBox/Header/AddWorkoutButton.pressed.connect(Callable(self, "_on_AddWorkoutButton_pressed"))
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/TodayButton.pressed.connect(Callable(self, "_on_TodayButton_pressed"))
+	$AppPanel/WorkoutEditor/VBoxContainer/ExerciseHeader/AddExerciseButton.pressed.connect(Callable(self, "_on_AddExerciseButton_pressed"))
+	$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/CancelWorkoutButton.pressed.connect(Callable(self, "_on_CancelWorkoutButton_pressed"))
+	$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/SaveWorkoutButton.pressed.connect(Callable(self, "_on_SaveWorkoutButton_pressed"))
+	$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/DeleteWorkoutButton.pressed.connect(Callable(self, "_on_DeleteWorkoutButton_pressed"))
+	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseButtonBar/SaveExerciseButton.pressed.connect(Callable(self, "_on_SaveExerciseButton_pressed"))
+	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseButtonBar/CancelExerciseButton.pressed.connect(Callable(self, "_on_CancelExerciseButton_pressed"))
+	$AppPanel/ConfirmDialog.confirmed.connect(Callable(self, "_on_ConfirmDialog_confirmed"))
 
 	load_workouts()
 	print("[DEBUG] loaded workouts", workouts.size())
@@ -31,6 +31,7 @@ func load_workouts() -> void:
 	workouts = WorkoutStorage.load_workouts()
 	print("[DEBUG] load_workouts finished", workouts.size())
 	sort_workouts()
+	print("[DEBUG] sort_workouts finished")
 
 func save_workouts() -> void:
 	print("[DEBUG] save_workouts start", workouts.size())
@@ -44,12 +45,10 @@ func save_workouts() -> void:
 func sort_workouts() -> void:
 	workouts.sort_custom(_compare_workouts)
 
-func _compare_workouts(a: Dictionary, b: Dictionary) -> int:
+func _compare_workouts(a: Dictionary, b: Dictionary) -> bool:
 	var date_a = a.get("date", "")
 	var date_b = b.get("date", "")
-	if date_a == date_b:
-		return 0
-	return 1 if date_a < date_b else -1
+	return false if date_a < date_b else true
 
 func _normalize_workout_data(workout: Dictionary) -> void:
 	if not workout.has("date"):
@@ -70,7 +69,7 @@ func _get_workout_exercises() -> Array:
 	return exercises
 
 func build_workout_list() -> void:
-	var list = $MainPanel/VBox/ScrollWrapper/WorkoutList
+	var list = $AppPanel/MainPanel/VBox/ScrollWrapper/WorkoutList
 	while list.get_child_count() > 0:
 		list.get_child(0).free()
 
@@ -94,42 +93,42 @@ func _on_AddWorkoutButton_pressed() -> void:
 	open_workout_editor(-1)
 
 func _on_TodayButton_pressed() -> void:
-	$WorkoutEditor/VBoxContainer/DateRow/DateEdit.text = _get_today_date()
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text = _get_today_date()
 
 func _get_today_date() -> String:
 	var now = Time.get_datetime_dict_from_system()
 	return "%04d-%02d-%02d" % [now.year, now.month, now.day]
 
 func show_main_screen() -> void:
-	$MainPanel.show()
-	$WorkoutEditor.hide()
-	$ExerciseEditor.hide()
+	$AppPanel/MainPanel.show()
+	$AppPanel/WorkoutEditor.hide()
+	$AppPanel/ExerciseEditor.hide()
 
 func show_workout_screen() -> void:
-	$MainPanel.hide()
-	$WorkoutEditor.show()
-	$ExerciseEditor.hide()
+	$AppPanel/MainPanel.hide()
+	$AppPanel/WorkoutEditor.show()
+	$AppPanel/ExerciseEditor.hide()
 
 func open_workout_editor(index: int) -> void:
 	print("[DEBUG] open_workout_editor", index)
-	$ExerciseEditor.hide()
+	$AppPanel/ExerciseEditor.hide()
 	editing_index = index
 	if index >= 0 and index < workouts.size():
 		edit_workout = workouts[index].duplicate(true)
 		_normalize_workout_data(edit_workout)
-		$WorkoutEditor/VBoxContainer/WorkoutEditorTitle.text = "Edit Workout"
+		$AppPanel/WorkoutEditor/VBoxContainer/WorkoutEditorTitle.text = "Edit Workout"
 	else:
 		edit_workout = {"date": _get_today_date(), "exercises": []}
-		$WorkoutEditor/VBoxContainer/WorkoutEditorTitle.text = "Add Workout"
+		$AppPanel/WorkoutEditor/VBoxContainer/WorkoutEditorTitle.text = "Add Workout"
 
 	print("[DEBUG] current edit_workout", edit_workout)
-	$WorkoutEditor/VBoxContainer/DateRow/DateEdit.text = edit_workout["date"]
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text = edit_workout["date"]
 	refresh_exercise_list()
 	show_workout_screen()
 
 func refresh_exercise_list() -> void:
 	print("[DEBUG] refresh_exercise_list start")
-	var list = $WorkoutEditor/VBoxContainer/ExerciseScroll/ExerciseList
+	var list = $AppPanel/WorkoutEditor/VBoxContainer/ExerciseScroll/ExerciseList
 	if list == null:
 		print("[DEBUG] refresh_exercise_list list is null")
 		return
@@ -171,12 +170,12 @@ func _on_WorkoutItem_pressed(index: int) -> void:
 
 func _on_AddExerciseButton_pressed() -> void:
 	editing_exercise_index = -1
-	$ExerciseEditor/VBoxContainer/NameRow/NameEdit.text = ""
-	$ExerciseEditor/VBoxContainer/RepsRow/RepsEdit.text = ""
-	$ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = ""
-	$ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Exercise"
-	$WorkoutEditor.hide()
-	$ExerciseEditor.show()
+	$AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameEdit.text = ""
+	$AppPanel/ExerciseEditor/VBoxContainer/RepsRow/RepsEdit.text = ""
+	$AppPanel/ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = ""
+	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Exercise"
+	$AppPanel/WorkoutEditor.hide()
+	$AppPanel/ExerciseEditor.show()
 
 func _on_EditExerciseButton_pressed(index: int) -> void:
 	var exercises = _get_workout_exercises()
@@ -187,12 +186,12 @@ func _on_EditExerciseButton_pressed(index: int) -> void:
 
 	editing_exercise_index = index
 	var exercise = exercises[index]
-	$ExerciseEditor/VBoxContainer/NameRow/NameEdit.text = exercise.get("name", "")
-	$ExerciseEditor/VBoxContainer/RepsRow/RepsEdit.text = exercise.get("reps", "")
-	$ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = exercise.get("notes", "")
-	$ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Edit Exercise"
-	$WorkoutEditor.hide()
-	$ExerciseEditor.show()
+	$AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameEdit.text = exercise.get("name", "")
+	$AppPanel/ExerciseEditor/VBoxContainer/RepsRow/RepsEdit.text = exercise.get("reps", "")
+	$AppPanel/ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = exercise.get("notes", "")
+	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Edit Exercise"
+	$AppPanel/WorkoutEditor.hide()
+	$AppPanel/ExerciseEditor.show()
 
 func _on_DeleteExerciseButton_pressed(index: int) -> void:
 	pending_delete_action = "exercise"
@@ -200,9 +199,9 @@ func _on_DeleteExerciseButton_pressed(index: int) -> void:
 	show_confirmation("Delete exercise", "Delete this exercise from the workout?")
 
 func _on_SaveExerciseButton_pressed() -> void:
-	var ename = $ExerciseEditor/VBoxContainer/NameRow/NameEdit.text.strip_edges()
-	var reps = $ExerciseEditor/VBoxContainer/RepsRow/RepsEdit.text.strip_edges()
-	var notes = $ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text.strip_edges()
+	var ename = $AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameEdit.text.strip_edges()
+	var reps = $AppPanel/ExerciseEditor/VBoxContainer/RepsRow/RepsEdit.text.strip_edges()
+	var notes = $AppPanel/ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text.strip_edges()
 
 	var exercise = {
 		"name": ename,
@@ -226,17 +225,17 @@ func _on_SaveExerciseButton_pressed() -> void:
 	print("[DEBUG] _on_SaveExerciseButton_pressed before refresh", edit_workout)
 	refresh_exercise_list()
 	print("[DEBUG] _on_SaveExerciseButton_pressed after refresh")
-	$ExerciseEditor.hide()
+	$AppPanel/ExerciseEditor.hide()
 	print("[DEBUG] _on_SaveExerciseButton_pressed after ExerciseEditor.hide")
 	show_workout_screen()
 	print("[DEBUG] _on_SaveExerciseButton_pressed after show_workout_screen")
 
 func _on_CancelExerciseButton_pressed() -> void:
-	$ExerciseEditor.hide()
+	$AppPanel/ExerciseEditor.hide()
 	show_workout_screen()
 
 func _on_SaveWorkoutButton_pressed() -> void:
-	var date_text = $WorkoutEditor/VBoxContainer/DateRow/DateEdit.text.strip_edges()
+	var date_text = $AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text.strip_edges()
 	print("[DEBUG] _on_SaveWorkoutButton_pressed", date_text, editing_index, edit_workout)
 	if date_text == "":
 		print("[DEBUG] empty date_text, abort save")
@@ -279,6 +278,6 @@ func _on_ConfirmDialog_confirmed() -> void:
 
 func show_confirmation(title: String, message: String) -> void:
 	print("[DEBUG] show_confirmation", title, message)
-	$ConfirmDialog.window_title = title
-	$ConfirmDialog.dialog_text = message
-	$ConfirmDialog.popup_centered()
+	$AppPanel/ConfirmDialog.title = title
+	$AppPanel/ConfirmDialog.dialog_text = message
+	$AppPanel/ConfirmDialog.popup_centered()
