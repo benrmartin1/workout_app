@@ -100,6 +100,16 @@ func _get_today_date() -> String:
 	var now = Time.get_datetime_dict_from_system()
 	return "%04d-%02d-%02d" % [now.year, now.month, now.day]
 
+func show_main_screen() -> void:
+	$MainPanel.show()
+	$WorkoutEditor.hide()
+	$ExerciseEditor.hide()
+
+func show_workout_screen() -> void:
+	$MainPanel.hide()
+	$WorkoutEditor.show()
+	$ExerciseEditor.hide()
+
 func open_workout_editor(index: int) -> void:
 	print("[DEBUG] open_workout_editor", index)
 	$ExerciseEditor.hide()
@@ -115,7 +125,7 @@ func open_workout_editor(index: int) -> void:
 	print("[DEBUG] current edit_workout", edit_workout)
 	$WorkoutEditor/VBoxContainer/DateRow/DateEdit.text = edit_workout["date"]
 	refresh_exercise_list()
-	$WorkoutEditor.popup_centered()
+	show_workout_screen()
 
 func refresh_exercise_list() -> void:
 	print("[DEBUG] refresh_exercise_list start")
@@ -166,7 +176,7 @@ func _on_AddExerciseButton_pressed() -> void:
 	$ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = ""
 	$ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Exercise"
 	$WorkoutEditor.hide()
-	$ExerciseEditor.popup_centered()
+	$ExerciseEditor.show()
 
 func _on_EditExerciseButton_pressed(index: int) -> void:
 	var exercises = _get_workout_exercises()
@@ -182,7 +192,7 @@ func _on_EditExerciseButton_pressed(index: int) -> void:
 	$ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = exercise.get("notes", "")
 	$ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Edit Exercise"
 	$WorkoutEditor.hide()
-	$ExerciseEditor.popup_centered()
+	$ExerciseEditor.show()
 
 func _on_DeleteExerciseButton_pressed(index: int) -> void:
 	pending_delete_action = "exercise"
@@ -218,12 +228,12 @@ func _on_SaveExerciseButton_pressed() -> void:
 	print("[DEBUG] _on_SaveExerciseButton_pressed after refresh")
 	$ExerciseEditor.hide()
 	print("[DEBUG] _on_SaveExerciseButton_pressed after ExerciseEditor.hide")
-	$WorkoutEditor.popup_centered()
-	print("[DEBUG] _on_SaveExerciseButton_pressed after WorkoutEditor.popup_centered")
+	show_workout_screen()
+	print("[DEBUG] _on_SaveExerciseButton_pressed after show_workout_screen")
 
 func _on_CancelExerciseButton_pressed() -> void:
 	$ExerciseEditor.hide()
-	$WorkoutEditor.popup_centered()
+	show_workout_screen()
 
 func _on_SaveWorkoutButton_pressed() -> void:
 	var date_text = $WorkoutEditor/VBoxContainer/DateRow/DateEdit.text.strip_edges()
@@ -240,10 +250,10 @@ func _on_SaveWorkoutButton_pressed() -> void:
 		workouts.append(edit_workout.duplicate(true))
 
 	save_workouts()
-	$WorkoutEditor.hide()
+	show_main_screen()
 
 func _on_CancelWorkoutButton_pressed() -> void:
-	$WorkoutEditor.hide()
+	show_main_screen()
 
 func _on_DeleteWorkoutButton_pressed() -> void:
 	if editing_index >= 0 and editing_index < workouts.size():
@@ -256,7 +266,7 @@ func _on_ConfirmDialog_confirmed() -> void:
 		if editing_index >= 0 and editing_index < workouts.size():
 			workouts.remove_at(editing_index)
 			save_workouts()
-		$WorkoutEditor.hide()
+		show_main_screen()
 	elif pending_delete_action == "exercise":
 		var exercises = _get_workout_exercises()
 		if pending_delete_index >= 0 and pending_delete_index < exercises.size():

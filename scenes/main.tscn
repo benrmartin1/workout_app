@@ -48,15 +48,26 @@ layout_mode = 2
 size_flags_horizontal = 2
 size_flags_vertical = 2
 
-[node name="WorkoutEditor" type="PopupPanel" parent="." unique_id=1482033206]
-oversampling_override = 1.0
-size = Vector2i(179, 240)
+[node name="WorkoutEditor" type="PanelContainer" parent="." unique_id=1482033206]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+visible = false
 
 [node name="VBoxContainer" type="VBoxContainer" parent="WorkoutEditor" unique_id=447693964]
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 175.0
-offset_bottom = 236.0
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+margin_left = 16.0
+margin_top = 16.0
+margin_right = -16.0
+margin_bottom = -16.0
 
 [node name="WorkoutEditorTitle" type="Label" parent="WorkoutEditor/VBoxContainer" unique_id=1234567890]
 layout_mode = 2
@@ -116,16 +127,28 @@ text = "Save"
 
 [node name="ConfirmDialog" type="ConfirmationDialog" parent="." unique_id=1525461050]
 oversampling_override = 1.0
+size = Vector2i(210, 128)
 
-[node name="ExerciseEditor" type="PopupPanel" parent="." unique_id=1374924443]
-oversampling_override = 1.0
-size = Vector2i(133, 175)
+[node name="ExerciseEditor" type="PanelContainer" parent="." unique_id=1374924443]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+visible = false
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ExerciseEditor" unique_id=1983161971]
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 129.0
-offset_bottom = 171.0
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+margin_left = 16.0
+margin_top = 16.0
+margin_right = -16.0
+margin_bottom = -16.0
 
 [node name="ExerciseEditorTitle" type="Label" parent="ExerciseEditor/VBoxContainer" unique_id=1234567891]
 layout_mode = 2
@@ -163,7 +186,7 @@ text = "Notes (optional)"
 
 [node name="NotesEdit" type="TextEdit" parent="ExerciseEditor/VBoxContainer/NotesRow" unique_id=3693421]
 layout_mode = 2
-size_flags_vertical = 2
+size_flags_vertical = 3
 
 [node name="ExerciseButtonBar" type="HBoxContainer" parent="ExerciseEditor/VBoxContainer" unique_id=1865740753]
 layout_mode = 2
