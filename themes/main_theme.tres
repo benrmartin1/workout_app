@@ -1,0 +1,7 @@
+[gd_resource type="Theme" format=3 uid="uid://dl2ow0llpfgbq"]
+
+[ext_resource type="FontFile" uid="uid://chy3tju1hcxe5" path="res://fonts/Outfit/static/Outfit-Regular.ttf" id="1_rjgu6"]
+
+[resource]
+default_font_size = 35
+Label/fonts/font = ExtResource("1_rjgu6")

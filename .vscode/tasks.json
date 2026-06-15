@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Open Godot Editor",
+      "type": "shell",
+      "command": "godot",
+      "args": ["--path", "${workspaceFolder}"],
+      "presentation": {
+        "reveal": "always"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

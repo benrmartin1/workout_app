@@ -1,0 +1,13 @@
+{
+  "files.exclude": {
+    "**/.godot": true,
+    "**/*.import": true,
+    "**/*.import.meta": true
+  },
+  "search.exclude": {
+    "**/.godot": true,
+    "**/*.import": true,
+    "**/*.import.meta": true
+},
+"godotTools.editorPath.godot4": "c:\\Users\\Ben\\GameDev\\Godot\\Godot_v4.6-stable_mono_win64.exe"
+}
