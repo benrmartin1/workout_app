@@ -50,26 +50,66 @@ layout_mode = 2
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_sugp2")
 
-[node name="VBox" type="VBoxContainer" parent="AppPanel/MainPanel" unique_id=691912387]
+[node name="MainVBox" type="VBoxContainer" parent="AppPanel/MainPanel" unique_id=691912380]
 layout_mode = 2
 
-[node name="Header" type="HBoxContainer" parent="AppPanel/MainPanel/VBox" unique_id=1628152082]
+[node name="TabBar" type="TabBar" parent="AppPanel/MainPanel/MainVBox" unique_id=148526331]
+layout_mode = 2
+current_tab = 0
+tab_count = 2
+tab_0/title = "Workouts"
+tab_1/title = "Exercises"
+
+[node name="TabContainer" type="PanelContainer" parent="AppPanel/MainPanel/MainVBox" unique_id=148526332]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_sugp2")
+
+[node name="WorkoutTab" type="VBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer" unique_id=691912387]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="AppPanel/MainPanel/VBox/Header" unique_id=151091072]
+[node name="Header" type="HBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab" unique_id=1628152082]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab/Header" unique_id=151091072]
 layout_mode = 2
 text = "Workout Logs"
 
-[node name="AddWorkoutButton" type="Button" parent="AppPanel/MainPanel/VBox/Header" unique_id=912751022]
+[node name="AddWorkoutButton" type="Button" parent="AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab/Header" unique_id=912751022]
 layout_mode = 2
 text = "Add Workout"
 
-[node name="ScrollWrapper" type="ScrollContainer" parent="AppPanel/MainPanel/VBox" unique_id=421300590]
+[node name="ScrollWrapper" type="ScrollContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab" unique_id=421300590]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="WorkoutList" type="VBoxContainer" parent="AppPanel/MainPanel/VBox/ScrollWrapper" unique_id=1865223684]
+[node name="WorkoutList" type="VBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab/ScrollWrapper" unique_id=1865223684]
+layout_mode = 2
+size_flags_horizontal = 2
+size_flags_vertical = 2
+
+[node name="ExerciseTab" type="VBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer" unique_id=691912388]
+visible = false
+layout_mode = 2
+
+[node name="ExerciseHeader" type="HBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/ExerciseTab" unique_id=850033346]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="AppPanel/MainPanel/MainVBox/TabContainer/ExerciseTab/ExerciseHeader" unique_id=151091073]
+layout_mode = 2
+text = "Exercises"
+
+[node name="AddExerciseMainButton" type="Button" parent="AppPanel/MainPanel/MainVBox/TabContainer/ExerciseTab/ExerciseHeader" unique_id=912751023]
+layout_mode = 2
+text = "Add Exercise"
+
+[node name="ExerciseScrollWrapper" type="ScrollContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/ExerciseTab" unique_id=421300591]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ExerciseListMain" type="VBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/ExerciseTab/ExerciseScrollWrapper" unique_id=1865223685]
 layout_mode = 2
 size_flags_horizontal = 2
 size_flags_vertical = 2
@@ -120,6 +160,7 @@ text = "Add"
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
 [node name="ExerciseList" type="VBoxContainer" parent="AppPanel/WorkoutEditor/VBoxContainer/ExerciseScroll" unique_id=218758057]
 layout_mode = 2
