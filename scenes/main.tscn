@@ -42,77 +42,84 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_0wfyh")
 
-[node name="AppBackground" type="ColorRect" parent="AppPanel" unique_id=525094388]
+[node name="MainPanel" type="PanelContainer" parent="AppPanel" unique_id=148526330]
 visible = false
 layout_mode = 2
-
-[node name="MainPanel" type="PanelContainer" parent="AppPanel" unique_id=148526330]
-layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_sugp2")
 
-[node name="MainVBox" type="VBoxContainer" parent="AppPanel/MainPanel" unique_id=691912380]
-layout_mode = 2
-
-[node name="TabBar" type="TabBar" parent="AppPanel/MainPanel/MainVBox" unique_id=148526331]
+[node name="TabContainer" type="TabContainer" parent="AppPanel/MainPanel" unique_id=444998420]
 layout_mode = 2
 current_tab = 0
-tab_count = 2
 tab_0/title = "Workouts"
 tab_1/title = "Exercises"
+tab_2/title = "Settings"
 
-[node name="TabContainer" type="PanelContainer" parent="AppPanel/MainPanel/MainVBox" unique_id=148526332]
+[node name="WorkoutTab" type="VBoxContainer" parent="AppPanel/MainPanel/TabContainer" unique_id=691912387]
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxEmpty_sugp2")
+metadata/_tab_index = 0
+metadata/_tab_name = "Workouts"
 
-[node name="WorkoutTab" type="VBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer" unique_id=691912387]
-layout_mode = 2
-
-[node name="Header" type="HBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab" unique_id=1628152082]
+[node name="Header" type="HBoxContainer" parent="AppPanel/MainPanel/TabContainer/WorkoutTab" unique_id=1628152082]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab/Header" unique_id=151091072]
+[node name="Title" type="Label" parent="AppPanel/MainPanel/TabContainer/WorkoutTab/Header" unique_id=151091072]
 layout_mode = 2
 text = "Workout Logs"
 
-[node name="AddWorkoutButton" type="Button" parent="AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab/Header" unique_id=912751022]
+[node name="AddWorkoutButton" type="Button" parent="AppPanel/MainPanel/TabContainer/WorkoutTab/Header" unique_id=912751022]
 layout_mode = 2
 text = "Add Workout"
 
-[node name="ScrollWrapper" type="ScrollContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab" unique_id=421300590]
+[node name="ScrollWrapper" type="ScrollContainer" parent="AppPanel/MainPanel/TabContainer/WorkoutTab" unique_id=421300590]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="WorkoutList" type="VBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab/ScrollWrapper" unique_id=1865223684]
+[node name="WorkoutList" type="VBoxContainer" parent="AppPanel/MainPanel/TabContainer/WorkoutTab/ScrollWrapper" unique_id=1865223684]
 layout_mode = 2
 size_flags_horizontal = 2
 size_flags_vertical = 2
 
-[node name="ExerciseTab" type="VBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer" unique_id=691912388]
+[node name="ExerciseTab" type="VBoxContainer" parent="AppPanel/MainPanel/TabContainer" unique_id=691912388]
 visible = false
 layout_mode = 2
+metadata/_tab_index = 1
+metadata/_tab_name = "Exercises"
 
-[node name="ExerciseHeader" type="HBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/ExerciseTab" unique_id=850033346]
+[node name="ExerciseHeader" type="HBoxContainer" parent="AppPanel/MainPanel/TabContainer/ExerciseTab" unique_id=850033346]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="AppPanel/MainPanel/MainVBox/TabContainer/ExerciseTab/ExerciseHeader" unique_id=151091073]
+[node name="Title" type="Label" parent="AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseHeader" unique_id=151091073]
 layout_mode = 2
 text = "Exercises"
 
-[node name="AddGlobalExerciseButton" type="Button" parent="AppPanel/MainPanel/MainVBox/TabContainer/ExerciseTab/ExerciseHeader" unique_id=912751023]
+[node name="AddGlobalExerciseButton" type="Button" parent="AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseHeader" unique_id=912751023]
 layout_mode = 2
 text = "Add Exercise"
 
-[node name="ExerciseScrollWrapper" type="ScrollContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/ExerciseTab" unique_id=421300591]
+[node name="ExerciseScrollWrapper" type="ScrollContainer" parent="AppPanel/MainPanel/TabContainer/ExerciseTab" unique_id=421300591]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ExerciseListMain" type="VBoxContainer" parent="AppPanel/MainPanel/MainVBox/TabContainer/ExerciseTab/ExerciseScrollWrapper" unique_id=1865223685]
+[node name="ExerciseListMain" type="VBoxContainer" parent="AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseScrollWrapper" unique_id=1865223685]
 layout_mode = 2
 size_flags_horizontal = 2
 size_flags_vertical = 2
+
+[node name="SettingsTab" type="VBoxContainer" parent="AppPanel/MainPanel/TabContainer" unique_id=1775502968]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+metadata/_tab_name = "Settings"
+
+[node name="Version" type="Label" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=1989242573]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.5968138, 0.3419893, 1)
+text = "Version X"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="WorkoutEditor" type="PanelContainer" parent="AppPanel" unique_id=1482033206]
 visible = false
@@ -182,12 +189,6 @@ text = "Cancel"
 layout_mode = 2
 text = "Save"
 
-[node name="ConfirmDialog" type="ConfirmationDialog" parent="AppPanel" unique_id=1525461050]
-oversampling_override = 1.0
-position = Vector2i(0, 36)
-size = Vector2i(290, 128)
-dialog_autowrap = true
-
 [node name="ExerciseEditor" type="PanelContainer" parent="AppPanel" unique_id=1374924443]
 visible = false
 layout_mode = 2
@@ -213,6 +214,19 @@ text = "Name"
 [node name="NameDropdown" type="OptionButton" parent="AppPanel/ExerciseEditor/VBoxContainer/NameRow" unique_id=1864875696]
 layout_mode = 2
 
+[node name="PreviousRepsRow" type="HBoxContainer" parent="AppPanel/ExerciseEditor/VBoxContainer" unique_id=1007529343]
+layout_mode = 2
+
+[node name="RepsLabel" type="Label" parent="AppPanel/ExerciseEditor/VBoxContainer/PreviousRepsRow" unique_id=1444560689]
+layout_mode = 2
+text = "Last time"
+
+[node name="RepsEdit" type="LineEdit" parent="AppPanel/ExerciseEditor/VBoxContainer/PreviousRepsRow" unique_id=1773230433]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "N/A"
+editable = false
+
 [node name="RepsRow" type="HBoxContainer" parent="AppPanel/ExerciseEditor/VBoxContainer" unique_id=181580949]
 layout_mode = 2
 
@@ -236,6 +250,7 @@ text = "Notes (optional)"
 [node name="NotesEdit" type="TextEdit" parent="AppPanel/ExerciseEditor/VBoxContainer/NotesRow" unique_id=3693421]
 layout_mode = 2
 size_flags_vertical = 3
+placeholder_text = "e.g. I pooped"
 
 [node name="ExerciseButtonBar" type="HBoxContainer" parent="AppPanel/ExerciseEditor/VBoxContainer" unique_id=1865740753]
 layout_mode = 2
@@ -249,7 +264,6 @@ layout_mode = 2
 text = "Save"
 
 [node name="GlobalExerciseEditor" type="PanelContainer" parent="AppPanel" unique_id=260953800]
-visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -277,6 +291,33 @@ size_flags_horizontal = 3
 [node name="NameEdit2" type="LineEdit" parent="AppPanel/GlobalExerciseEditor/VBoxContainer/NameRow" unique_id=59975806]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="CategoryRow" type="HBoxContainer" parent="AppPanel/GlobalExerciseEditor/VBoxContainer" unique_id=102813723]
+layout_mode = 2
+
+[node name="CategoryLabel" type="Label" parent="AppPanel/GlobalExerciseEditor/VBoxContainer/CategoryRow" unique_id=313165578]
+layout_mode = 2
+text = "Category"
+
+[node name="CategoryDropdown" type="OptionButton" parent="AppPanel/GlobalExerciseEditor/VBoxContainer/CategoryRow" unique_id=892807286]
+layout_mode = 2
+item_count = 8
+popup/item_0/text = "Cardio"
+popup/item_0/id = 0
+popup/item_1/text = "Chest"
+popup/item_1/id = 1
+popup/item_2/text = "Back"
+popup/item_2/id = 2
+popup/item_3/text = "Arms"
+popup/item_3/id = 3
+popup/item_4/text = "Core"
+popup/item_4/id = 4
+popup/item_5/text = "Glutes"
+popup/item_5/id = 5
+popup/item_6/text = "Legs"
+popup/item_6/id = 6
+popup/item_7/text = "Other"
+popup/item_7/id = 7
 
 [node name="NotesRow" type="VBoxContainer" parent="AppPanel/GlobalExerciseEditor/VBoxContainer" unique_id=353391972]
 custom_minimum_size = Vector2(0, 200)
@@ -333,3 +374,9 @@ layout_mode = 2
 [node name="CancelWorkoutButton" type="Button" parent="AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseDetailsButtonBar" unique_id=2046738588]
 layout_mode = 2
 text = "Cancel"
+
+[node name="ConfirmDialog" type="ConfirmationDialog" parent="AppPanel" unique_id=1525461050]
+oversampling_override = 1.0
+position = Vector2i(0, 36)
+size = Vector2i(290, 128)
+dialog_autowrap = true

@@ -5,12 +5,10 @@ Custom offline workout tracker.
 ## Future Ideas
 
 ### High
-- When adding exercise, another line above the reps which shows the previous reps/sets of the same exercise
-- Save button indicates that there is unsaved data (Save*)
-- Cancel button confirm only when unsaved data
 - Add category of exercise (arms/leg/core/other/etc) dropdown when adding global exercise
 - Sort options on the global exercise screen by category, default (json order), alphabetical
 - Back button should not close app
+- Cancel button confirm (only when unsaved data)
 
 ### Med
 - Move delete button from same line as edit to within the edit menu (delete is a rare action compared to edit)
