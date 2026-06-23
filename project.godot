@@ -13,7 +13,7 @@ config_version=5
 config/name="Workout"
 run/main_scene="uid://b4viskvcxkhr8"
 config/features=PackedStringArray("4.6", "Mobile")
-config/icon="res://icon.svg"
+config/icon="uid://un4jojtusrho"
 
 [display]
 

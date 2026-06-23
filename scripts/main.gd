@@ -1,5 +1,7 @@
 extends Control
 
+enum DELETE_ACTION {WORKOUT, EXERCISE, GLOBAL_EXERCISE, NONE}
+
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
 
 var workouts: Array = []
@@ -10,7 +12,7 @@ var editing_exercise_index: int = -1
 # Index of the exercise being edited, or -1 if adding a new exercise
 var editing_global_exercise_index: int = -1
 
-var pending_delete_action: String = ""
+var pending_delete_action: DELETE_ACTION = DELETE_ACTION.NONE
 var pending_delete_index: int = -1
 
 func _ready() -> void:
@@ -122,7 +124,7 @@ func build_workout_list() -> void:
 
 	if workouts.is_empty():
 		var label = Label.new()
-		label.text = "No workouts yet. Tap Add Workout to begin."
+		label.text = "No workouts yet. \nTap Add Workout to begin."
 		label.add_theme_color_override("font_color", Color.GRAY)
 		list.add_child(label)
 		return
@@ -372,12 +374,12 @@ func _on_EditGlobalExerciseButton_pressed(index: int) -> void:
 	show_globalexercise_editor()
 
 func _on_DeleteGlobalExerciseButton_pressed(index: int) -> void:
-	pending_delete_action = "global_exercise"
+	pending_delete_action = DELETE_ACTION.GLOBAL_EXERCISE
 	pending_delete_index = index
 	show_confirmation("Delete exercise", "Delete this exercise? This cannot be undone.")
 
 func _on_DeleteExerciseButton_pressed(index: int) -> void:
-	pending_delete_action = "exercise"
+	pending_delete_action = DELETE_ACTION.EXERCISE
 	pending_delete_index = index
 	show_confirmation("Delete exercise", "Delete this exercise from the workout?")
 
@@ -534,29 +536,30 @@ func _on_CancelWorkoutButton_pressed() -> void:
 
 func _on_DeleteWorkoutButton_pressed() -> void:
 	if editing_workout_index >= 0 and editing_workout_index < workouts.size():
-		pending_delete_action = "workout"
+		pending_delete_action = DELETE_ACTION.WORKOUT
 		show_confirmation("Delete workout", "Delete this workout and all recorded exercises?")
 
 func _on_ConfirmDialog_confirmed() -> void:
 	print("[DEBUG] _on_ConfirmDialog_confirmed", pending_delete_action, pending_delete_index)
-	if pending_delete_action == "workout":
-		if editing_workout_index >= 0 and editing_workout_index < workouts.size():
-			workouts.remove_at(editing_workout_index)
-			save_workouts()
-		show_main_screen()
-	elif pending_delete_action == "exercise":
-		var workout_exercises = _get_workout_exercises()
-		if pending_delete_index >= 0 and pending_delete_index < workout_exercises.size():
-			workout_exercises.remove_at(pending_delete_index)
-			edit_workout["exercises"] = workout_exercises
-			refresh_exercise_list()
-	elif pending_delete_action == "global_exercise":
-		if pending_delete_index >= 0 and pending_delete_index < exercises.size():
-			exercises.remove_at(pending_delete_index)
-			save_exercises()
 
-	pending_delete_action = ""
-	pending_delete_index = -1
+	match pending_delete_action:
+		DELETE_ACTION.WORKOUT:
+			if editing_workout_index >= 0 and editing_workout_index < workouts.size():
+				workouts.remove_at(editing_workout_index)
+				save_workouts()
+			show_main_screen()
+		DELETE_ACTION.EXERCISE:
+			var workout_exercises = _get_workout_exercises()
+			if pending_delete_index >= 0 and pending_delete_index < workout_exercises.size():
+				workout_exercises.remove_at(pending_delete_index)
+				edit_workout["exercises"] = workout_exercises
+				refresh_exercise_list()
+		DELETE_ACTION.GLOBAL_EXERCISE:
+			if pending_delete_index >= 0 and pending_delete_index < exercises.size():
+				exercises.remove_at(pending_delete_index)
+				save_exercises()
+		DELETE_ACTION.NONE:
+			print("[DEBUG] No delete action to perform.")
 
 func show_confirmation(title: String, message: String) -> void:
 	print("[DEBUG] show_confirmation", title, message)
