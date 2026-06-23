@@ -3,7 +3,7 @@ extends Control
 enum DELETE_ACTION {WORKOUT, EXERCISE, GLOBAL_EXERCISE, NONE}
 
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
-const Version = "1.1.0"
+const Version = "1.2.0"
 
 var workouts: Array = []
 var exercises: Array = []
@@ -194,6 +194,10 @@ func build_exercise_list() -> void:
 		delete_button.text = "Delete"
 		delete_button.pressed.connect(Callable(self, "_on_DeleteGlobalExerciseButton_pressed").bind(index))
 		row.add_child(delete_button)
+
+		# Add warning symbol if exercise is missing category or has empty name
+		if not exercise.has("category") or exercise["category"] < 0 or exercise.get("name", "").strip_edges() == "":
+			name_button.text = "⚠ " + name_button.text
 		
 		list.add_child(row)
 
@@ -235,9 +239,10 @@ func _on_AddWorkoutButton_pressed() -> void:
 	open_workout_editor(-1)
 
 func _on_AddGlobalExerciseButton_pressed() -> void:
+	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Global Exercise"
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/NameRow/NameEdit.text = ""
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = ""
-	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Global Exercise"
+	$AppPanel/GlobalExerciseEditor/VBoxContainer/CategoryRow/CategoryDropdown.select(-1)
 	editing_global_exercise_index = -1
 	_set_global_exercise_dirty(false)
 	show_globalexercise_editor()
@@ -349,6 +354,16 @@ func refresh_exercise_list() -> void:
 		delete_button.pressed.connect(Callable(self, "_on_DeleteExerciseButton_pressed").bind(exercise_index))
 		row.add_child(delete_button)
 
+		# Add warning symbol if exercise is not in global exercise list or has empty name
+		var exercise_name = exercise.get("name", "").strip_edges()
+		var exercise_found = false
+		for global_exercise in exercises:
+			if global_exercise.get("name", "").strip_edges() == exercise_name:
+				exercise_found = true
+				break
+		if not exercise_found or exercise_name == "":
+			summary.text = "⚠ " + summary.text
+
 		list.add_child(row)
 
 func _on_WorkoutItem_pressed(index: int) -> void:
@@ -424,9 +439,11 @@ func _on_EditGlobalExerciseButton_pressed(index: int) -> void:
 
 	editing_global_exercise_index = index
 	var exercise = exercises[index]
+	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Edit Global Exercise"
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/NameRow/NameEdit.text = exercise.get("name", "")
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = exercise.get("notes", "")
-	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Edit Global Exercise"
+	var dropdown = $AppPanel/GlobalExerciseEditor/VBoxContainer/CategoryRow/CategoryDropdown
+	dropdown.select(exercise.get("category", -1)) # TODO?
 	_set_global_exercise_dirty(false)
 	show_globalexercise_editor()
 
@@ -536,11 +553,18 @@ func _on_CancelExerciseButton_pressed() -> void:
 func _on_SaveGlobalExerciseButton_pressed() -> void:
 	var ename = $AppPanel/GlobalExerciseEditor/VBoxContainer/NameRow/NameEdit.text.strip_edges()
 	var notes = $AppPanel/GlobalExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text.strip_edges()
+	var category_index = $AppPanel/GlobalExerciseEditor/VBoxContainer/CategoryRow/CategoryDropdown.get_selected_id()
 
 	var exercise = {
 		"name": ename,
-		"notes": notes
+		"notes": notes,
+		"category": category_index
 	}
+
+	if ename == "" or category_index < 0:
+		print("[DEBUG] empty exercise name or invalid category, abort save")
+		# TODO: show error in the app
+		return
 
 	# Ensure exercise does not already exist
 	for i in range(exercises.size()):

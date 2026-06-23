@@ -43,7 +43,6 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_0wfyh")
 
 [node name="MainPanel" type="PanelContainer" parent="AppPanel" unique_id=148526330]
-visible = false
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_sugp2")
 
@@ -264,6 +263,7 @@ layout_mode = 2
 text = "Save"
 
 [node name="GlobalExerciseEditor" type="PanelContainer" parent="AppPanel" unique_id=260953800]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -361,7 +361,6 @@ text = "Exercise Details (Exercise Name)"
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_vertical = 3
-horizontal_scroll_mode = 0
 
 [node name="ExerciseList" type="VBoxContainer" parent="AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseScroll" unique_id=103265864]
 layout_mode = 2
