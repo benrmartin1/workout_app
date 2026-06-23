@@ -25,8 +25,10 @@ func _ready() -> void:
 	
 	# Global exercise editor buttons
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseButtonBar/SaveExerciseButton.pressed.connect(Callable(self, "_on_SaveGlobalExerciseButton_pressed"))
-
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseButtonBar/CancelExerciseButton.pressed.connect(Callable(self, "_on_CancelGlobalExerciseButton_pressed"))
+	
+	# Exercise details buttons
+	$AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseDetailsButtonBar/CancelWorkoutButton.pressed.connect(Callable(self, "_on_CancelExerciseDetailsButton_pressed"))
 
 	# Workout editor buttons
 	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/TodayButton.pressed.connect(Callable(self, "_on_TodayButton_pressed"))
@@ -176,7 +178,8 @@ func _on_AddWorkoutButton_pressed() -> void:
 func _on_AddGlobalExerciseButton_pressed() -> void:
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/NameRow/NameEdit.text = ""
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = ""
-	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Exercise"
+	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Global Exercise"
+	editing_global_exercise_index = -1
 	show_globalexercise_editor()
 
 func _on_TodayButton_pressed() -> void:
@@ -191,24 +194,42 @@ func show_main_screen() -> void:
 	$AppPanel/WorkoutEditor.hide()
 	$AppPanel/ExerciseEditor.hide()
 	$AppPanel/GlobalExerciseEditor.hide()
+	$AppPanel/GlobalExerciseDetails.hide()
 
 func show_workout_screen() -> void:
 	$AppPanel/MainPanel.hide()
 	$AppPanel/WorkoutEditor.show()
 	$AppPanel/ExerciseEditor.hide()
 	$AppPanel/GlobalExerciseEditor.hide()
+	$AppPanel/GlobalExerciseDetails.hide()
 
 func show_exercise_editor() -> void:
 	$AppPanel/MainPanel.hide()
 	$AppPanel/WorkoutEditor.hide()
 	$AppPanel/ExerciseEditor.show()
 	$AppPanel/GlobalExerciseEditor.hide()
+	$AppPanel/GlobalExerciseDetails.hide()
 
 func show_globalexercise_editor() -> void:
 	$AppPanel/MainPanel.hide()
 	$AppPanel/WorkoutEditor.hide()
 	$AppPanel/ExerciseEditor.hide()
 	$AppPanel/GlobalExerciseEditor.show()
+	$AppPanel/GlobalExerciseDetails.hide()
+
+func show_exercise_details(exercise_name: String) -> void:
+	$AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseDetailsTitle.text = exercise_name
+	build_exercise_history_list(exercise_name)
+	$AppPanel/MainPanel.hide()
+	$AppPanel/WorkoutEditor.hide()
+	$AppPanel/ExerciseEditor.hide()
+	$AppPanel/GlobalExerciseEditor.hide()
+	$AppPanel/GlobalExerciseDetails.show()
+
+func _on_CancelExerciseDetailsButton_pressed() -> void:
+	show_main_screen()
+	$AppPanel/MainPanel/MainVBox/TabBar.current_tab = 1
+	_on_TabBar_changed(1)
 
 func open_workout_editor(index: int) -> void:
 	print("[DEBUG] open_workout_editor", index)
@@ -274,8 +295,68 @@ func _on_WorkoutItem_pressed(index: int) -> void:
 	open_workout_editor(index)
 
 func _on_ExerciseItem_pressed(index: int) -> void:
-	# TODO: Open exercise detail view with history
-	print("[DEBUG] Clicked exercise:", index, exercises[index])
+	if index < 0 or index >= exercises.size():
+		return
+	var exercise_name = exercises[index].get("name", "")
+	print("[DEBUG] _on_ExerciseItem_pressed", index, exercise_name)
+	show_exercise_details(exercise_name)
+
+func build_exercise_history_list(exercise_name: String) -> void:
+	var list = $AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseScroll/ExerciseList
+	while list.get_child_count() > 0:
+		list.get_child(0).free()
+
+	var history: Array = []
+	for workout_index in workouts.size():
+		var workout = workouts[workout_index]
+		if workout is Dictionary:
+			var workout_date = workout.get("date", "")
+			var workout_exercises = workout.get("exercises", [])
+			if workout_exercises is Array:
+				for exercise in workout_exercises:
+					if exercise is Dictionary and exercise.get("name", "") == exercise_name:
+						history.append({
+						"date": workout_date,
+						"reps": exercise.get("reps", ""),
+						"workout_index": workout_index
+					})
+
+	history.sort_custom(_compare_exercise_history)
+
+	if history.is_empty():
+		var label = Label.new()
+		label.text = "No history for %s." % exercise_name
+		label.add_theme_color_override("font_color", Color.GRAY)
+		list.add_child(label)
+		return
+
+	for entry in history:
+		var row = HBoxContainer.new()
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		var date_button = Button.new()
+		date_button.text = entry.get("date", "")
+		date_button.focus_mode = Control.FOCUS_NONE
+		date_button.size_flags_horizontal = Control.SIZE_FILL
+		date_button.pressed.connect(Callable(self, "_on_HistoryWorkoutButton_pressed").bind(entry.get("workout_index")))
+		row.add_child(date_button)
+
+		var reps_label = Label.new()
+		reps_label.text = entry.get("reps", "")
+		reps_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(reps_label)
+
+		list.add_child(row)
+
+func _compare_exercise_history(a: Dictionary, b: Dictionary) -> bool:
+	var date_a = a.get("date", "")
+	var date_b = b.get("date", "")
+	return false if date_a < date_b else true
+
+func _on_HistoryWorkoutButton_pressed(workout_index: int) -> void:
+	open_workout_editor(workout_index)
+	$AppPanel/MainPanel/MainVBox/TabBar.current_tab = 0
+	_on_TabBar_changed(0)
 
 func _on_EditGlobalExerciseButton_pressed(index: int) -> void:
 	print("[DEBUG] _on_EditGlobalExerciseButton_pressed", index)
@@ -287,7 +368,7 @@ func _on_EditGlobalExerciseButton_pressed(index: int) -> void:
 	var exercise = exercises[index]
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/NameRow/NameEdit.text = exercise.get("name", "")
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = exercise.get("notes", "")
-	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Edit Exercise"
+	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Edit Global Exercise"
 	show_globalexercise_editor()
 
 func _on_DeleteGlobalExerciseButton_pressed(index: int) -> void:
@@ -400,6 +481,10 @@ func _on_SaveGlobalExerciseButton_pressed() -> void:
 			# TODO: show error in the app
 			return
 
+	var old_name = ""
+	if editing_global_exercise_index >= 0 and editing_global_exercise_index < exercises.size():
+		old_name = exercises[editing_global_exercise_index].get("name", "")
+
 	if editing_global_exercise_index >= 0:
 		if editing_global_exercise_index < exercises.size():
 			exercises[editing_global_exercise_index] = exercise
@@ -408,6 +493,16 @@ func _on_SaveGlobalExerciseButton_pressed() -> void:
 	else:
 		exercises.append(exercise)
 
+	if old_name != "" and old_name != ename:
+		for workout in workouts:
+			if workout is Dictionary:
+				var workout_exercises = workout.get("exercises", [])
+				if workout_exercises is Array:
+					for exercise_entry in workout_exercises:
+						if exercise_entry is Dictionary and exercise_entry.get("name", "") == old_name:
+							exercise_entry["name"] = ename
+		save_workouts()
+
 	save_exercises()
 	show_main_screen()
 	$AppPanel/GlobalExerciseEditor.hide()
@@ -415,7 +510,6 @@ func _on_SaveGlobalExerciseButton_pressed() -> void:
 func _on_CancelGlobalExerciseButton_pressed() -> void:
 	$AppPanel/GlobalExerciseEditor.hide()
 	show_main_screen()
-	#$AppPanel/MainPanel/MainVBox/TabBar.set_tab(-1)
 	_on_TabBar_changed(1)  # Show exercises tab
 
 func _on_SaveWorkoutButton_pressed() -> void:
