@@ -9,9 +9,9 @@ var editing_workout_index: int = -1
 var editing_exercise_index: int = -1
 # Index of the exercise being edited, or -1 if adding a new exercise
 var editing_global_exercise_index: int = -1
+
 var pending_delete_action: String = ""
 var pending_delete_index: int = -1
-var current_tab: int = 0
 
 func _ready() -> void:
 	print("[DEBUG] _ready start")
@@ -105,7 +105,6 @@ func _get_workout_exercises() -> Array:
 
 func _on_TabBar_changed(tab_index: int) -> void:
 	print("[DEBUG] Tab changed to", tab_index)
-	current_tab = tab_index
 	
 	if tab_index == 0:
 		$AppPanel/MainPanel/MainVBox/TabContainer/WorkoutTab.show()
@@ -278,19 +277,6 @@ func _on_ExerciseItem_pressed(index: int) -> void:
 	# TODO: Open exercise detail view with history
 	print("[DEBUG] Clicked exercise:", index, exercises[index])
 
-func _on_AddExerciseButton_pressed() -> void:
-	var dropdown = $AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown
-	# Add exercise list to dropdown
-	dropdown.clear()
-	for exercise in exercises:
-		dropdown.add_item(exercise.get("name", "(no name)"))
-	$AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown.select(-1)
-
-	$AppPanel/ExerciseEditor/VBoxContainer/RepsRow/RepsEdit.text = ""
-	$AppPanel/ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = ""
-	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Exercise"
-	show_exercise_editor()
-
 func _on_EditGlobalExerciseButton_pressed(index: int) -> void:
 	print("[DEBUG] _on_EditGlobalExerciseButton_pressed", index)
 	if index < 0 or index >= exercises.size():
@@ -314,6 +300,19 @@ func _on_DeleteExerciseButton_pressed(index: int) -> void:
 	pending_delete_index = index
 	show_confirmation("Delete exercise", "Delete this exercise from the workout?")
 
+func _on_AddExerciseButton_pressed() -> void:
+	var dropdown = $AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown
+	# Add exercise list to dropdown
+	dropdown.clear()
+	for exercise in exercises:
+		dropdown.add_item(exercise.get("name", "(no name)"))
+	$AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown.select(-1)
+
+	$AppPanel/ExerciseEditor/VBoxContainer/RepsRow/RepsEdit.text = ""
+	$AppPanel/ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = ""
+	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Exercise"
+	show_exercise_editor()
+
 func _on_EditExerciseButton_pressed(index: int) -> void:
 	var workout_exercises = _get_workout_exercises()
 	print("[DEBUG] _on_EditExerciseButton_pressed", index, workout_exercises.size())
@@ -332,14 +331,12 @@ func _on_EditExerciseButton_pressed(index: int) -> void:
 		dropdown.add_item(ex.get("name", "(no name)"))
 		if ex.get("name", "") == exercise.get("name", ""):
 			selected_index = i
-	if selected_index >= 0:
-		dropdown.select(selected_index)
+	dropdown.select(selected_index)
 
 	$AppPanel/ExerciseEditor/VBoxContainer/RepsRow/RepsEdit.text = exercise.get("reps", "")
 	$AppPanel/ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = exercise.get("notes", "")
 	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Edit Exercise"
-	$AppPanel/WorkoutEditor.hide()
-	$AppPanel/ExerciseEditor.show()
+	show_exercise_editor()
 
 func _on_SaveExerciseButton_pressed() -> void:
 	var ename = $AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown.text.strip_edges()
