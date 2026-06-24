@@ -110,6 +110,24 @@ text = "Exercises"
 layout_mode = 2
 text = "Add Exercise"
 
+[node name="SortHBox" type="HBoxContainer" parent="AppPanel/MainPanel/TabContainer/ExerciseTab" unique_id=87669047]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="AppPanel/MainPanel/TabContainer/ExerciseTab/SortHBox" unique_id=631487967]
+layout_mode = 2
+text = "Sort"
+
+[node name="SortDropdown" type="OptionButton" parent="AppPanel/MainPanel/TabContainer/ExerciseTab/SortHBox" unique_id=505531629]
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "Default"
+popup/item_0/id = 0
+popup/item_1/text = "Category"
+popup/item_1/id = 1
+popup/item_2/text = "Name"
+popup/item_2/id = 2
+
 [node name="ExerciseListContainer" type="PanelContainer" parent="AppPanel/MainPanel/TabContainer/ExerciseTab" unique_id=2101083832]
 layout_mode = 2
 size_flags_vertical = 3

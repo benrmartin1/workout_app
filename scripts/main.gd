@@ -16,6 +16,9 @@ var editing_global_exercise_index: int = -1
 var pending_delete_action: DELETE_ACTION = DELETE_ACTION.NONE
 var pending_delete_index: int = -1
 
+enum EXERCISE_SORT {DEFAULT, CATEGORY, NAME}
+var exercise_sort_mode: int = EXERCISE_SORT.DEFAULT
+
 # Dirty flags to indicate unsaved changes
 var workout_dirty: bool = false
 var exercise_dirty: bool = false
@@ -48,6 +51,7 @@ func _ready() -> void:
 	# Main panel buttons
 	$AppPanel/MainPanel/TabContainer/WorkoutTab/Header/AddWorkoutButton.pressed.connect(Callable(self, "_on_AddWorkoutButton_pressed"))
 	$AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseHeader/AddGlobalExerciseButton.pressed.connect(Callable(self, "_on_AddGlobalExerciseButton_pressed"))
+	$AppPanel/MainPanel/TabContainer/ExerciseTab/SortHBox/SortDropdown.item_selected.connect(Callable(self, "_on_ExerciseSort_selected"))
 	
 	# Global exercise editor buttons
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseButtonBar/SaveExerciseButton.pressed.connect(Callable(self, "_on_SaveGlobalExerciseButton_pressed"))
@@ -155,25 +159,13 @@ func build_workout_list() -> void:
 
 	for index in workouts.size():
 		var workout = workouts[index]
-		print("[DEBUG] build_workout_list item", index, workout)
-		var row = HBoxContainer.new()
-		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-		var summary = Label.new()
+		var item = Button.new()
 		var exercises_num = workout.get("exercises", []).size()
-		summary.text = "%s — %d exercise%s" % [workout.get("date", ""), exercises_num, "s" if exercises_num != 1 else ""]
-		# Allow long names to wrap onto multiple lines
-		summary.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-		# Keep the label filling available space so it wraps instead of expanding
-		summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(summary)
-
-		var edit_button = Button.new()
-		edit_button.text = "Edit"
-		edit_button.pressed.connect(Callable(self, "_on_WorkoutItem_pressed").bind(index))
-		row.add_child(edit_button)
-
-		list.add_child(row)
+		item.text = "%s — %d exercise%s" % [workout.get("date", ""), exercises_num, "s" if exercises_num != 1 else ""]
+		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		item.focus_mode = Control.FOCUS_NONE
+		item.pressed.connect(Callable(self, "_on_WorkoutItem_pressed").bind(index))
+		list.add_child(item)
 
 func build_exercise_list() -> void:
 	var list = $AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseListContainer/ExerciseScrollWrapper/ExerciseListMain
@@ -187,8 +179,17 @@ func build_exercise_list() -> void:
 		list.add_child(label)
 		return
 
-	for index in exercises.size():
-		var exercise = exercises[index]
+	var exercise_order = []
+	for i in exercises.size():
+		exercise_order.append(i)
+	if exercise_sort_mode == EXERCISE_SORT.NAME:
+		exercise_order.sort_custom(_compare_exercise_indices_by_name)
+	elif exercise_sort_mode == EXERCISE_SORT.CATEGORY:
+		exercise_order.sort_custom(_compare_exercise_indices_by_category)
+
+	for sorted_index in exercise_order.size():
+		var exercise_index = exercise_order[sorted_index]
+		var exercise = exercises[exercise_index]
 		var row = HBoxContainer.new()
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		
@@ -205,22 +206,19 @@ func build_exercise_list() -> void:
 		view_button.text = "View"
 		# view_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		# view_button.focus_mode = Control.FOCUS_NONE
-		view_button.pressed.connect(Callable(self, "_on_ExerciseItem_pressed").bind(index))
+		view_button.pressed.connect(Callable(self, "_on_ExerciseItem_pressed").bind(exercise_index))
 		row.add_child(view_button)
 		
 		var edit_button = Button.new()
 		edit_button.text = "Edit"
 		# edit_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		edit_button.pressed.connect(Callable(self, "_on_EditGlobalExerciseButton_pressed").bind(index))
+		edit_button.pressed.connect(Callable(self, "_on_EditGlobalExerciseButton_pressed").bind(exercise_index))
 		row.add_child(edit_button)
 
 		var delete_button = Button.new()
-		delete_button.text = "Delete"
+		delete_button.text = "Del"
 		# delete_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		delete_button.pressed.connect(Callable(self, "_on_DeleteGlobalExerciseButton_pressed").bind(index))
-		row.add_child(delete_button)
-
-		# Add warning symbol if exercise is missing category or has empty name
+		delete_button.pressed.connect(Callable(self, "_on_DeleteGlobalExerciseButton_pressed").bind(exercise_index))
 		if not exercise.has("category") or exercise["category"] < 0 or exercise.get("name", "").strip_edges() == "":
 			exercise_name.text = "⚠ " + exercise_name.text
 		
@@ -240,6 +238,10 @@ func _on_ExerciseDropdown_selected(_index: int) -> void:
 	var previous_reps = _get_previous_exercise_reps(exercise_name)
 	$AppPanel/ExerciseEditor/VBoxContainer/PreviousRepsRow/RepsEdit.text = previous_reps
 	_set_exercise_dirty(true)
+
+func _on_ExerciseSort_selected(index: int) -> void:
+	exercise_sort_mode = index
+	build_exercise_list()
 
 func _get_previous_exercise_reps(exercise_name: String) -> String:
 	# Search through workouts in order, starting on the current workout index - 1
@@ -449,6 +451,22 @@ func build_exercise_history_list(exercise_name: String) -> void:
 		row.add_child(reps_label)
 
 		list.add_child(row)
+
+func _compare_exercise_indices_by_name(a: int, b: int) -> bool:
+	var name_a = exercises[a].get("name", "").to_lower()
+	var name_b = exercises[b].get("name", "").to_lower()
+	return false if name_a > name_b else true
+
+func _compare_exercise_indices_by_category(a: int, b: int) -> bool:
+	var cat_a = exercises[a].get("category", -1)
+	var cat_b = exercises[b].get("category", -1)
+	if cat_a < 0:
+		cat_a = 999
+	if cat_b < 0:
+		cat_b = 999
+	if cat_a == cat_b:
+		return _compare_exercise_indices_by_name(a, b)
+	return false if cat_a < cat_b else true
 
 func _compare_exercise_history(a: Dictionary, b: Dictionary) -> bool:
 	var date_a = a.get("date", "")
