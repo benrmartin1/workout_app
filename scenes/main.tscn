@@ -6,6 +6,10 @@
 [ext_resource type="StyleBox" uid="uid://272bpuadurb1" path="res://themes/scroll_theme.tres" id="3_sugp2"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0wfyh"]
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
 bg_color = Color(0.0014178357, 0.12182533, 0.20851877, 1)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_sugp2"]
@@ -17,6 +21,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme = ExtResource("1_0wfyh")
 script = ExtResource("1")
 
@@ -36,10 +42,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -345.0
-offset_top = -620.0
-offset_right = 345.0
-offset_bottom = 620.0
+offset_left = -360.0
+offset_top = -640.0
+offset_right = 360.0
+offset_bottom = 640.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_0wfyh")
@@ -62,6 +68,7 @@ metadata/_tab_name = "Workouts"
 
 [node name="Header" type="HBoxContainer" parent="AppPanel/MainPanel/TabContainer/WorkoutTab" unique_id=1628152082]
 layout_mode = 2
+alignment = 1
 
 [node name="Title" type="Label" parent="AppPanel/MainPanel/TabContainer/WorkoutTab/Header" unique_id=151091072]
 layout_mode = 2
@@ -71,14 +78,18 @@ text = "Workout Logs"
 layout_mode = 2
 text = "Add Workout"
 
-[node name="ScrollWrapper" type="ScrollContainer" parent="AppPanel/MainPanel/TabContainer/WorkoutTab" unique_id=421300590]
-custom_minimum_size = Vector2(0, 120)
+[node name="WorkoutListContainer" type="PanelContainer" parent="AppPanel/MainPanel/TabContainer/WorkoutTab" unique_id=1574876750]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("3_sugp2")
 
-[node name="WorkoutList" type="VBoxContainer" parent="AppPanel/MainPanel/TabContainer/WorkoutTab/ScrollWrapper" unique_id=1865223684]
+[node name="ScrollWrapper" type="ScrollContainer" parent="AppPanel/MainPanel/TabContainer/WorkoutTab/WorkoutListContainer" unique_id=421300590]
+custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
-size_flags_horizontal = 2
+
+[node name="WorkoutList" type="VBoxContainer" parent="AppPanel/MainPanel/TabContainer/WorkoutTab/WorkoutListContainer/ScrollWrapper" unique_id=1865223684]
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 2
 
 [node name="ExerciseTab" type="VBoxContainer" parent="AppPanel/MainPanel/TabContainer" unique_id=691912388]
@@ -89,6 +100,7 @@ metadata/_tab_name = "Exercises"
 
 [node name="ExerciseHeader" type="HBoxContainer" parent="AppPanel/MainPanel/TabContainer/ExerciseTab" unique_id=850033346]
 layout_mode = 2
+alignment = 1
 
 [node name="Title" type="Label" parent="AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseHeader" unique_id=151091073]
 layout_mode = 2

@@ -142,7 +142,7 @@ func _get_workout_exercises() -> Array:
 	return exercises_list
 
 func build_workout_list() -> void:
-	var list = $AppPanel/MainPanel/TabContainer/WorkoutTab/ScrollWrapper/WorkoutList
+	var list = $AppPanel/MainPanel/TabContainer/WorkoutTab/WorkoutListContainer/ScrollWrapper/WorkoutList
 	while list.get_child_count() > 0:
 		list.get_child(0).free()
 
@@ -155,13 +155,25 @@ func build_workout_list() -> void:
 
 	for index in workouts.size():
 		var workout = workouts[index]
-		var item = Button.new()
+		print("[DEBUG] build_workout_list item", index, workout)
+		var row = HBoxContainer.new()
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		var summary = Label.new()
 		var exercises_num = workout.get("exercises", []).size()
-		item.text = "%s — %d exercise%s" % [workout.get("date", ""), exercises_num, "s" if exercises_num != 1 else ""]
-		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		item.focus_mode = Control.FOCUS_NONE
-		item.pressed.connect(Callable(self, "_on_WorkoutItem_pressed").bind(index))
-		list.add_child(item)
+		summary.text = "%s — %d exercise%s" % [workout.get("date", ""), exercises_num, "s" if exercises_num != 1 else ""]
+		# Allow long names to wrap onto multiple lines
+		summary.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+		# Keep the label filling available space so it wraps instead of expanding
+		summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(summary)
+
+		var edit_button = Button.new()
+		edit_button.text = "Edit"
+		edit_button.pressed.connect(Callable(self, "_on_WorkoutItem_pressed").bind(index))
+		row.add_child(edit_button)
+
+		list.add_child(row)
 
 func build_exercise_list() -> void:
 	var list = $AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseListContainer/ExerciseScrollWrapper/ExerciseListMain
@@ -180,26 +192,37 @@ func build_exercise_list() -> void:
 		var row = HBoxContainer.new()
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		
-		var name_button = Button.new()
-		name_button.text = exercise.get("name", "(no name)")
-		name_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_button.focus_mode = Control.FOCUS_NONE
-		name_button.pressed.connect(Callable(self, "_on_ExerciseItem_pressed").bind(index))
-		row.add_child(name_button)
+		var exercise_name = Label.new()
+		exercise_name.text = exercise.get("name", "(no name)")
+		# Allow long names to wrap onto multiple lines
+		exercise_name.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+		# Keep the label filling available space so it wraps instead of expanding
+		exercise_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		exercise_name.size_flags_stretch_ratio = 4.0
+		row.add_child(exercise_name)
+
+		var view_button = Button.new()
+		view_button.text = "View"
+		# view_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		# view_button.focus_mode = Control.FOCUS_NONE
+		view_button.pressed.connect(Callable(self, "_on_ExerciseItem_pressed").bind(index))
+		row.add_child(view_button)
 		
 		var edit_button = Button.new()
 		edit_button.text = "Edit"
+		# edit_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		edit_button.pressed.connect(Callable(self, "_on_EditGlobalExerciseButton_pressed").bind(index))
 		row.add_child(edit_button)
 
 		var delete_button = Button.new()
 		delete_button.text = "Delete"
+		# delete_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		delete_button.pressed.connect(Callable(self, "_on_DeleteGlobalExerciseButton_pressed").bind(index))
 		row.add_child(delete_button)
 
 		# Add warning symbol if exercise is missing category or has empty name
 		if not exercise.has("category") or exercise["category"] < 0 or exercise.get("name", "").strip_edges() == "":
-			name_button.text = "⚠ " + name_button.text
+			exercise_name.text = "⚠ " + exercise_name.text
 		
 		list.add_child(row)
 
