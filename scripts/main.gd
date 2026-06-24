@@ -57,7 +57,8 @@ func _ready() -> void:
 	$AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseDetailsButtonBar/CancelWorkoutButton.pressed.connect(Callable(self, "_on_CancelExerciseDetailsButton_pressed"))
 
 	# Workout editor buttons
-	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/TodayButton.pressed.connect(Callable(self, "_on_TodayButton_pressed"))
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateDoneButton.pressed.connect(Callable(self, "_on_DateDoneButton_pressed"))
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.focus_entered.connect(Callable(self, "_on_DateEdit_focus_entered"))
 	$AppPanel/WorkoutEditor/VBoxContainer/ExerciseHeader/AddExerciseButton.pressed.connect(Callable(self, "_on_AddExerciseButton_pressed"))
 	$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/CancelWorkoutButton.pressed.connect(Callable(self, "_on_CancelWorkoutButton_pressed"))
 	$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/SaveWorkoutButton.pressed.connect(Callable(self, "_on_SaveWorkoutButton_pressed"))
@@ -66,6 +67,7 @@ func _ready() -> void:
 	# Exercise editor buttons
 	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseButtonBar/SaveExerciseButton.pressed.connect(Callable(self, "_on_SaveExerciseButton_pressed"))
 	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseButtonBar/CancelExerciseButton.pressed.connect(Callable(self, "_on_CancelExerciseButton_pressed"))
+	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseButtonBar/DeleteExerciseButton.pressed.connect(Callable(self, "_on_DeleteExerciseButton_pressed"))
 	
 	$AppPanel/ConfirmDialog.confirmed.connect(Callable(self, "_on_ConfirmDialog_confirmed"))
 
@@ -162,7 +164,7 @@ func build_workout_list() -> void:
 		list.add_child(item)
 
 func build_exercise_list() -> void:
-	var list = $AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseScrollWrapper/ExerciseListMain
+	var list = $AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseListContainer/ExerciseScrollWrapper/ExerciseListMain
 	while list.get_child_count() > 0:
 		list.get_child(0).free()
 
@@ -189,7 +191,7 @@ func build_exercise_list() -> void:
 		edit_button.text = "Edit"
 		edit_button.pressed.connect(Callable(self, "_on_EditGlobalExerciseButton_pressed").bind(index))
 		row.add_child(edit_button)
-		
+
 		var delete_button = Button.new()
 		delete_button.text = "Delete"
 		delete_button.pressed.connect(Callable(self, "_on_DeleteGlobalExerciseButton_pressed").bind(index))
@@ -219,7 +221,7 @@ func _on_ExerciseDropdown_selected(_index: int) -> void:
 func _get_previous_exercise_reps(exercise_name: String) -> String:
 	# Search through workouts in order, starting on the current workout index - 1
 	print("[DEBUG] _get_previous_exercise_reps ", exercise_name, " in workout ", editing_workout_index)
-	for workout_idx in range(editing_workout_index +1, workouts.size()):
+	for workout_idx in range(editing_workout_index + 1, workouts.size()):
 		print("[DEBUG] _get_previous_exercise_reps checking workout index ", workout_idx)
 		var workout = workouts[workout_idx]
 		if workout is Dictionary:
@@ -247,8 +249,15 @@ func _on_AddGlobalExerciseButton_pressed() -> void:
 	_set_global_exercise_dirty(false)
 	show_globalexercise_editor()
 
-func _on_TodayButton_pressed() -> void:
-	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text = _get_today_date()
+func _on_DateDoneButton_pressed() -> void:
+	# Unfocus the date edit box to remove virtual keyboard on mobile devices
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.release_focus()
+	# Disable date done button until the date edit box is focused again
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateDoneButton.disabled = true
+
+func _on_DateEdit_focus_entered() -> void:
+	# Enable date done button when the date edit box is focused
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateDoneButton.disabled = false
 
 func _get_today_date() -> String:
 	var now = Time.get_datetime_dict_from_system()
@@ -304,9 +313,11 @@ func open_workout_editor(index: int) -> void:
 		edit_workout = workouts[index].duplicate(true)
 		_normalize_workout_data(edit_workout)
 		$AppPanel/WorkoutEditor/VBoxContainer/WorkoutEditorTitle.text = "Edit Workout"
+		$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/DeleteWorkoutButton.visible = true
 	else:
 		edit_workout = {"date": _get_today_date(), "exercises": []}
 		$AppPanel/WorkoutEditor/VBoxContainer/WorkoutEditorTitle.text = "Add Workout"
+		$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/DeleteWorkoutButton.visible = false
 
 	print("[DEBUG] current edit_workout", edit_workout)
 	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text = edit_workout["date"]
@@ -315,7 +326,7 @@ func open_workout_editor(index: int) -> void:
 
 func refresh_exercise_list() -> void:
 	print("[DEBUG] refresh_exercise_list start")
-	var list = $AppPanel/WorkoutEditor/VBoxContainer/ExerciseScroll/ExerciseList
+	var list = $AppPanel/WorkoutEditor/VBoxContainer/ExerciseListContainer/ExerciseScroll/ExerciseList
 	if list == null:
 		print("[DEBUG] refresh_exercise_list list is null")
 		return
@@ -327,7 +338,7 @@ func refresh_exercise_list() -> void:
 	if workout_exercises == null:
 		print("[DEBUG] refresh_exercise_list exercises is null")
 		return
-	print("[DEBUG] refresh_exercise_list exercises", workout_exercises.size(), workout_exercises)
+	print("[DEBUG] refresh_exercise_list exercises", workout_exercises.size())
 	for exercise_index in workout_exercises.size():
 		var exercise = workout_exercises[exercise_index]
 		print("[DEBUG] refresh_exercise_list item", exercise_index, exercise)
@@ -338,8 +349,6 @@ func refresh_exercise_list() -> void:
 		summary.text = "%s — %s" % [exercise.get("name", "(no name)"), exercise.get("reps", "")]
 		# Allow long exercise names or reps to wrap onto multiple lines
 		summary.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-		# Prevent it from wrapping at a single character by enforcing a minimum width
-		summary.custom_minimum_size = Vector2(400, 0)
 		# Keep the label filling available space so it wraps instead of expanding
 		summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(summary)
@@ -348,11 +357,6 @@ func refresh_exercise_list() -> void:
 		edit_button.text = "Edit"
 		edit_button.pressed.connect(Callable(self, "_on_EditExerciseButton_pressed").bind(exercise_index))
 		row.add_child(edit_button)
-
-		var delete_button = Button.new()
-		delete_button.text = "Delete"
-		delete_button.pressed.connect(Callable(self, "_on_DeleteExerciseButton_pressed").bind(exercise_index))
-		row.add_child(delete_button)
 
 		# Add warning symbol if exercise is not in global exercise list or has empty name
 		var exercise_name = exercise.get("name", "").strip_edges()
@@ -377,7 +381,7 @@ func _on_ExerciseItem_pressed(index: int) -> void:
 	show_exercise_details(exercise_name)
 
 func build_exercise_history_list(exercise_name: String) -> void:
-	var list = $AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseScroll/ExerciseList
+	var list = $AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseListContainer/ExerciseScroll/ExerciseList
 	while list.get_child_count() > 0:
 		list.get_child(0).free()
 
@@ -452,9 +456,9 @@ func _on_DeleteGlobalExerciseButton_pressed(index: int) -> void:
 	pending_delete_index = index
 	show_confirmation("Delete exercise", "Delete this exercise? This cannot be undone.")
 
-func _on_DeleteExerciseButton_pressed(index: int) -> void:
+func _on_DeleteExerciseButton_pressed() -> void:
 	pending_delete_action = DELETE_ACTION.EXERCISE
-	pending_delete_index = index
+	pending_delete_index = editing_exercise_index
 	show_confirmation("Delete exercise", "Delete this exercise from the workout?")
 
 func _on_AddExerciseButton_pressed() -> void:
@@ -469,6 +473,7 @@ func _on_AddExerciseButton_pressed() -> void:
 	$AppPanel/ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text = ""
 	$AppPanel/ExerciseEditor/VBoxContainer/PreviousRepsRow/RepsEdit.text = ""
 	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Exercise"
+	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseButtonBar/DeleteExerciseButton.visible = false
 	_set_exercise_dirty(false)
 	show_exercise_editor()
 
@@ -497,6 +502,7 @@ func _on_EditExerciseButton_pressed(index: int) -> void:
 	var previous_reps = _get_previous_exercise_reps(exercise.get("name", ""))
 	$AppPanel/ExerciseEditor/VBoxContainer/PreviousRepsRow/RepsEdit.text = previous_reps
 	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Edit Exercise"
+	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseButtonBar/DeleteExerciseButton.visible = true
 	_set_exercise_dirty(false)
 	show_exercise_editor()
 
@@ -547,6 +553,7 @@ func _on_SaveExerciseButton_pressed() -> void:
 
 func _on_CancelExerciseButton_pressed() -> void:
 	$AppPanel/ExerciseEditor.hide()
+	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseButtonBar/DeleteExerciseButton.visible = false
 	_set_exercise_dirty(false)
 	show_workout_screen()
 
@@ -630,17 +637,19 @@ func _on_CancelWorkoutButton_pressed() -> void:
 func _on_DeleteWorkoutButton_pressed() -> void:
 	if editing_workout_index >= 0 and editing_workout_index < workouts.size():
 		pending_delete_action = DELETE_ACTION.WORKOUT
+		pending_delete_index = editing_workout_index
 		show_confirmation("Delete workout", "Delete this workout and all recorded exercises?")
 
 func _on_ConfirmDialog_confirmed() -> void:
-	print("[DEBUG] _on_ConfirmDialog_confirmed", pending_delete_action, pending_delete_index)
+	print("[DEBUG] _on_ConfirmDialog_confirmed, action: ", pending_delete_action, " index:", pending_delete_index)
 
 	match pending_delete_action:
 		DELETE_ACTION.WORKOUT:
-			if editing_workout_index >= 0 and editing_workout_index < workouts.size():
-				workouts.remove_at(editing_workout_index)
+			if pending_delete_index >= 0 and pending_delete_index < workouts.size():
+				workouts.remove_at(pending_delete_index)
 				save_workouts()
-			show_main_screen()
+				editing_workout_index = -1
+				show_main_screen()
 		DELETE_ACTION.EXERCISE:
 			var workout_exercises = _get_workout_exercises()
 			if pending_delete_index >= 0 and pending_delete_index < workout_exercises.size():
@@ -649,9 +658,12 @@ func _on_ConfirmDialog_confirmed() -> void:
 				refresh_exercise_list()
 				# Mark workout dirty since exercises changed
 				_set_workout_dirty(true)
+				editing_exercise_index = -1
+				show_workout_screen()
 		DELETE_ACTION.GLOBAL_EXERCISE:
 			if pending_delete_index >= 0 and pending_delete_index < exercises.size():
 				exercises.remove_at(pending_delete_index)
+				editing_global_exercise_index = -1
 				save_exercises()
 		DELETE_ACTION.NONE:
 			print("[DEBUG] No delete action to perform.")

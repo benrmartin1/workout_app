@@ -1,0 +1,7 @@
+[gd_resource type="LabelSettings" format=3 uid="uid://dhidmctx41eaw"]
+
+[ext_resource type="FontFile" uid="uid://bp8xvqarrodem" path="res://fonts/Outfit/static/Outfit-ExtraBold.ttf" id="1_sl5jo"]
+
+[resource]
+font = ExtResource("1_sl5jo")
+font_size = 30
