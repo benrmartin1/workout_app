@@ -1,9 +1,9 @@
 extends Control
 
-enum DELETE_ACTION {WORKOUT, EXERCISE, GLOBAL_EXERCISE, NONE}
+enum DELETE_ACTION {WORKOUT, EXERCISE, GLOBAL_EXERCISE, NONE, EXIT_APP}
 
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
-const Version = "1.2.2"
+const Version = "1.2.3"
 
 var workouts: Array = []
 var exercises: Array = []
@@ -97,6 +97,9 @@ func _ready() -> void:
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/NameRow/NameEdit.text_changed.connect(Callable(self, "_on_GlobalExerciseEditor_field_changed"))
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text_changed.connect(Callable(self, "_on_GlobalExerciseEditor_field_changed"))
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/CategoryRow/CategoryDropdown.item_selected.connect(Callable(self, "_on_GlobalExerciseEditor_field_changed"))
+
+	# Set max length for text field global exercise dropdown
+	$AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown.get_popup().max_size = Vector2(600, 1000)
 
 	load_workouts()
 	load_exercises()
@@ -492,19 +495,19 @@ func _compare_exercise_indices_by_name(a: int, b: int) -> bool:
 	# The function should return true if the first element should be moved before the second one, otherwise it should return false
 	var name_a = exercises[a].get("name", "").to_lower()
 	var name_b = exercises[b].get("name", "").to_lower()
-	return name_a < name_b 
+	return name_a < name_b
 
 func _compare_exercise_indices_by_category(a: int, b: int) -> bool:
 	# The function should return true if the first element should be moved before the second one, otherwise it should return false
 	var cat_a = exercises[a].get("category", -1)
 	var cat_b = exercises[b].get("category", -1)
 	if cat_a == cat_b:
-		return _compare_exercise_indices_by_name(a, b)  
+		return _compare_exercise_indices_by_name(a, b)
 	if cat_a == -1:
-		return true  
+		return true
 	if cat_b == -1:
 		return false
-	return cat_a < cat_b 
+	return cat_a < cat_b
 
 func _compare_exercise_history(a: Dictionary, b: Dictionary) -> bool:
 	var date_a = a.get("date", "")
@@ -694,7 +697,7 @@ func _on_DeleteWorkoutButton_pressed() -> void:
 		show_confirmation("Delete workout", "Delete this workout and all recorded exercises?")
 
 func _on_ConfirmDialog_confirmed() -> void:
-	print("[DEBUG] _on_ConfirmDialog_confirmed, action: ", pending_delete_action, " index:", pending_delete_index)
+	print("[DEBUG] _on_ConfirmDialog_confirmed, action: ", pending_delete_action, " index: ", pending_delete_index)
 
 	match pending_delete_action:
 		DELETE_ACTION.WORKOUT:
@@ -717,6 +720,9 @@ func _on_ConfirmDialog_confirmed() -> void:
 				exercises.remove_at(pending_delete_index)
 				editing_global_exercise_index = -1
 				WorkoutStorage.save_exercises(exercises)
+				build_global_exercise_list() # Rebuild the list to reflect the deletion
+		DELETE_ACTION.EXIT_APP:
+			get_tree().quit()
 		DELETE_ACTION.NONE:
 			print("[DEBUG] No delete action to perform.")
 
@@ -725,3 +731,27 @@ func show_confirmation(title: String, message: String) -> void:
 	$AppPanel/ConfirmDialog.title = title
 	$AppPanel/ConfirmDialog.dialog_text = message
 	$AppPanel/ConfirmDialog.popup_centered()
+
+func _notification(what):
+	# Handle back button press on Android
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		print("[DEBUG] Back button pressed")
+		if $AppPanel/ConfirmDialog.visible:
+			$AppPanel/ConfirmDialog.hide()
+			return
+		if $AppPanel/MainPanel.visible:
+			pending_delete_action = DELETE_ACTION.EXIT_APP
+			show_confirmation("Exit app", "Close the app?   	 :(")
+			return
+		if $AppPanel/ExerciseEditor.visible:
+			_on_CancelExerciseButton_pressed()
+			return
+		if $AppPanel/GlobalExerciseEditor.visible:
+			_on_CancelGlobalExerciseButton_pressed()
+			return
+		if $AppPanel/GlobalExerciseDetails.visible:
+			_on_CancelExerciseDetailsButton_pressed()
+			return
+		if $AppPanel/WorkoutEditor.visible:
+			_on_BackWorkoutButton_pressed()
+			return

@@ -251,6 +251,9 @@ text = "Name"
 
 [node name="NameDropdown" type="OptionButton" parent="AppPanel/ExerciseEditor/VBoxContainer/NameRow" unique_id=1864875696]
 layout_mode = 2
+size_flags_horizontal = 3
+text_overrun_behavior = 3
+fit_to_longest_item = false
 
 [node name="PreviousRepsRow" type="HBoxContainer" parent="AppPanel/ExerciseEditor/VBoxContainer" unique_id=1007529343]
 layout_mode = 2
