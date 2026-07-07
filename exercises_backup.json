@@ -1,0 +1,67 @@
+[
+    {
+        "category": 5.0,
+        "name": "Squats",
+        "notes": "Leg exercise, full body compound"
+    },
+    {
+        "category": 2.0,
+        "name": "Deadlifts",
+        "notes": "Back and leg exercise"
+    },
+    {
+        "category": 2.0,
+        "name": "Pull-ups",
+        "notes": "Back and arms"
+    },
+    {
+        "category": 3.0,
+        "name": "Dumbbell Curls",
+        "notes": "Bicep isolation"
+    },
+    {
+        "category": 3.0,
+        "name": "Shoulder Press",
+        "notes": "Shoulders and triceps"
+    },
+    {
+        "category": 2.0,
+        "name": "Barbell Rows",
+        "notes": "Back thickness"
+    },
+    {
+        "category": 3.0,
+        "name": "Tricep Dips",
+        "notes": "Tricep isolation"
+    },
+    {
+        "category": 2.0,
+        "name": "Lat Pulldown",
+        "notes": "Back width"
+    },
+    {
+        "category": 2.0,
+        "name": "Rows",
+        "notes": ""
+    },
+    {
+        "category": 3.0,
+        "name": "Bench Press",
+        "notes": ""
+    },
+    {
+        "category": 6.0,
+        "name": "Leg Press",
+        "notes": ""
+    },
+    {
+        "category": 0.0,
+        "name": "Treadmill",
+        "notes": ""
+    },
+    {
+        "category": 7.0,
+        "name": "Massage Chair",
+        "notes": ""
+    }
+]

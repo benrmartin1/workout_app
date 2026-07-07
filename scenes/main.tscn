@@ -157,6 +157,27 @@ text = "Version X"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="ExportWorkoutsButton" type="Button" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=97716147]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Export workout data"
+
+[node name="ExportExercisesButton" type="Button" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=1471966468]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Export exercises data"
+
+[node name="AutoBackupButton" type="Button" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=1938411661]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Create backup in userdata"
+
+[node name="BackupStatus" type="Label" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=1719122568]
+layout_mode = 2
+text = "Last backup: n/a"
+horizontal_alignment = 1
+autowrap_mode = 1
+
 [node name="WorkoutEditor" type="PanelContainer" parent="AppPanel" unique_id=1482033206]
 visible = false
 layout_mode = 2

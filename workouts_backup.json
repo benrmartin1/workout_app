@@ -1,0 +1,147 @@
+[
+    {
+        "date": "2026-07-07",
+        "exercises": [
+            {
+                "name": "Treadmill",
+                "notes": "",
+                "reps": ""
+            }
+        ]
+    },
+    {
+        "date": "2026-06-23",
+        "exercises": [
+            {
+                "name": "ReallyReallyReallyReallyReallReallyReally Long Name Exercise",
+                "notes": "",
+                "reps": ""
+            },
+            {
+                "name": "Shoulder Press",
+                "notes": "",
+                "reps": "3x10 @ 95lbs"
+            },
+            {
+                "name": "Tricep Dips",
+                "notes": "Bodyweight",
+                "reps": "3x12"
+            },
+            {
+                "name": "Shoulder Press",
+                "notes": "",
+                "reps": ""
+            },
+            {
+                "name": "Shoulder Press",
+                "notes": "",
+                "reps": ""
+            },
+            {
+                "name": "Massage Chair",
+                "notes": "",
+                "reps": ""
+            }
+        ]
+    },
+    {
+        "date": "2026-06-21",
+        "exercises": [
+            {
+                "name": "Pull-ups",
+                "notes": "Assisted with 20lbs",
+                "reps": "3x8"
+            },
+            {
+                "name": "Deadlifts",
+                "notes": "",
+                "reps": ""
+            },
+            {
+                "name": "Rows",
+                "notes": "",
+                "reps": ""
+            },
+            {
+                "name": "Global Exercise with Extra Long Name",
+                "notes": "",
+                "reps": ""
+            },
+            {
+                "name": "Squats",
+                "notes": "",
+                "reps": ""
+            }
+        ]
+    },
+    {
+        "date": "2026-06-19",
+        "exercises": [
+            {
+                "name": "Squats",
+                "notes": "Deep, full ROM",
+                "reps": "4x8 @ 275lbs"
+            },
+            {
+                "name": "Leg Press",
+                "notes": "Full stack",
+                "reps": "3x12 @ full"
+            },
+            {
+                "name": "Deadlifts",
+                "notes": "Last set felt strong",
+                "reps": "3x5 @ 315lbs"
+            },
+            {
+                "name": "Pull-ups",
+                "notes": "",
+                "reps": ""
+            }
+        ]
+    },
+    {
+        "date": "2026-06-16",
+        "exercises": [
+            {
+                "name": "Bench Press",
+                "notes": "Building up",
+                "reps": "4x8 @ 175lbs"
+            },
+            {
+                "name": "Shoulder Press",
+                "notes": "",
+                "reps": "3x10 @ 85lbs"
+            },
+            {
+                "name": "Pull-ups",
+                "notes": "",
+                "reps": ""
+            }
+        ]
+    },
+    {
+        "date": "2026-06-14",
+        "exercises": [
+            {
+                "name": "Barbell Rows",
+                "notes": "Good weight progression",
+                "reps": "4x8 @ 175lbs"
+            },
+            {
+                "name": "Pull-ups",
+                "notes": "Assisted",
+                "reps": "3x6"
+            }
+        ]
+    },
+    {
+        "date": "2026-06-12",
+        "exercises": [
+            {
+                "name": "Squats",
+                "notes": "First workout back",
+                "reps": "3x8 @ 225lbs"
+            }
+        ]
+    }
+]

@@ -3,7 +3,7 @@ extends Control
 enum DELETE_ACTION {WORKOUT, EXERCISE, GLOBAL_EXERCISE, NONE, EXIT_APP}
 
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
-const Version = "1.2.3"
+const Version = "1.3.0"
 
 var workouts: Array = []
 var exercises: Array = []
@@ -23,6 +23,7 @@ var exercise_sort_mode: int = EXERCISE_SORT.DEFAULT
 var workout_dirty: bool = false
 var exercise_dirty: bool = false
 var global_exercise_dirty: bool = false
+var export_dialog: FileDialog
 
 func _commit_workout_changes() -> void:
 	print("[DEBUG] _commit_workout_changes start, editing_workout_index: ", editing_workout_index)
@@ -73,6 +74,11 @@ func _ready() -> void:
 	# Exercise details buttons
 	$AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseDetailsButtonBar/CancelExerciseButton.pressed.connect(Callable(self, "_on_CancelExerciseDetailsButton_pressed"))
 
+	# Settings buttons
+	$AppPanel/MainPanel/TabContainer/SettingsTab/ExportWorkoutsButton.pressed.connect(Callable(self, "_on_ExportWorkoutsButton_pressed"))
+	$AppPanel/MainPanel/TabContainer/SettingsTab/ExportExercisesButton.pressed.connect(Callable(self, "_on_ExportExercisesButton_pressed"))
+	$AppPanel/MainPanel/TabContainer/SettingsTab/AutoBackupButton.pressed.connect(Callable(self, "_on_AutoBackupButton_pressed"))
+
 	# Workout editor buttons
 	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateDoneButton.pressed.connect(Callable(self, "_on_DateDoneButton_pressed"))
 	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.focus_entered.connect(Callable(self, "_on_DateEdit_focus_entered"))
@@ -101,13 +107,72 @@ func _ready() -> void:
 	# Set max length for text field global exercise dropdown
 	$AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown.get_popup().max_size = Vector2(600, 1000)
 
+	_create_export_dialog()
+
 	load_workouts()
 	load_exercises()
 	print("[DEBUG] loaded workouts", workouts.size(), "exercises", exercises.size())
 	build_workout_list()
 	build_global_exercise_list()
+	_update_backup_status_label()
 	set_version()
 	print("[DEBUG] _ready complete")
+
+func _create_export_dialog() -> void:
+	export_dialog = FileDialog.new()
+	export_dialog.title = "Export backup"
+	export_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	export_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+	export_dialog.use_native_dialog = true
+	export_dialog.add_filter("*.json ; JSON Files")
+	export_dialog.file_selected.connect(Callable(self, "_on_export_dialog_file_selected"))
+	add_child(export_dialog)
+
+func _on_ExportWorkoutsButton_pressed() -> void:
+	export_dialog.title = "Export workouts backup"
+	export_dialog.current_file = "workouts_backup.json"
+	export_dialog.popup_centered_ratio(0.8)
+
+func _on_ExportExercisesButton_pressed() -> void:
+	export_dialog.title = "Export exercises backup"
+	export_dialog.current_file = "exercises_backup.json"
+	export_dialog.popup_centered_ratio(0.8)
+
+func _on_AutoBackupButton_pressed() -> void:
+	if WorkoutStorage.create_auto_backup(workouts, exercises):
+		print("[DEBUG] Created automatic backups in user data folder")
+		_update_backup_status_label()
+	else:
+		print("[DEBUG] Failed to create automatic backups")
+		_update_backup_status_label("Failed")
+
+func _on_export_dialog_file_selected(path: String) -> void:
+	if export_dialog.title.contains("workouts"):
+		if WorkoutStorage.export_workouts(workouts, path):
+			print("[DEBUG] Exported workouts backup to ", path)
+		else:
+			print("[DEBUG] Failed to export workouts backup to ", path)
+		return
+
+	if WorkoutStorage.export_exercises(exercises, path):
+		print("[DEBUG] Exported exercises backup to ", path)
+	else:
+		print("[DEBUG] Failed to export exercises backup to ", path)
+
+func _update_backup_status_label(status_text: String = "") -> void:
+	var backup_status = $AppPanel/MainPanel/TabContainer/SettingsTab/BackupStatus
+	if backup_status == null:
+		return
+
+	if status_text != "":
+		backup_status.text = "Last backup: " + status_text
+		return
+
+	var latest_backup = WorkoutStorage.get_latest_backup_filename()
+	if latest_backup != "":
+		backup_status.text = "Last backup: " + latest_backup
+	else:
+		backup_status.text = "Last backup not found"
 
 func load_workouts() -> void:
 	print("[DEBUG] load_workouts start")
@@ -119,22 +184,6 @@ func load_exercises() -> void:
 	print("[DEBUG] load_exercises start")
 	exercises = WorkoutStorage.load_exercises()
 	print("[DEBUG] load_exercises finished, exercises size: ", exercises.size())
-
-# func save_workouts() -> void:
-# 	print("[DEBUG] save_workouts start, workouts size: ", workouts.size())
-# 	if WorkoutStorage.save_workouts(workouts):
-# 		workouts = WorkoutStorage.load_workouts()
-# 		print("[DEBUG] save_workouts reload finished, workouts size: ", workouts.size())
-# 	build_workout_list()
-# 	print("[DEBUG] save_workouts complete")
-	
-# func save_exercises() -> void:
-# 	print("[DEBUG] save_exercises start, exercises size: ", exercises.size())
-# 	if WorkoutStorage.save_exercises(exercises):
-# 		exercises = WorkoutStorage.load_exercises()
-# 		print("[DEBUG] save_exercises reload finished, exercises size: ", exercises.size())
-# 	build_global_exercise_list()
-# 	print("[DEBUG] save_exercises complete")
 
 func sort_workouts() -> void:
 	workouts.sort_custom(_compare_workouts)
