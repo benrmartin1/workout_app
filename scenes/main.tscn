@@ -218,13 +218,9 @@ size_flags_vertical = 2
 [node name="EditorButtonBar" type="HBoxContainer" parent="AppPanel/WorkoutEditor/VBoxContainer" unique_id=235334889]
 layout_mode = 2
 
-[node name="CancelWorkoutButton" type="Button" parent="AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar" unique_id=2101965443]
+[node name="BackWorkoutButton" type="Button" parent="AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar" unique_id=2101965443]
 layout_mode = 2
-text = "Cancel"
-
-[node name="SaveWorkoutButton" type="Button" parent="AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar" unique_id=101307130]
-layout_mode = 2
-text = "Save"
+text = "Back"
 
 [node name="DeleteWorkoutButton" type="Button" parent="AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar" unique_id=105814166]
 layout_mode = 2
@@ -420,7 +416,7 @@ size_flags_vertical = 2
 [node name="ExerciseDetailsButtonBar" type="HBoxContainer" parent="AppPanel/GlobalExerciseDetails/VBoxContainer" unique_id=241726992]
 layout_mode = 2
 
-[node name="CancelWorkoutButton" type="Button" parent="AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseDetailsButtonBar" unique_id=2046738588]
+[node name="CancelExerciseButton" type="Button" parent="AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseDetailsButtonBar" unique_id=2046738588]
 layout_mode = 2
 text = "Cancel"
 
