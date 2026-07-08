@@ -5,12 +5,9 @@ Custom offline workout tracker.
 ## Future Ideas
 
 ### High
-- Save backups once a week
 
 ### Med
-- Cancel button confirm (only when unsaved data)
 - Show number of exercices per category on the main page showing workouts (currently shows num total)
-- Export in settings menu
 
 ### Low
 - UI improvements

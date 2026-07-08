@@ -2,5 +2,6 @@
 .godot/
 /android/
 /exports
+
 exercises_backup.json
 workouts_backup.json

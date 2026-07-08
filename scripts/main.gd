@@ -3,7 +3,7 @@ extends Control
 enum DELETE_ACTION {WORKOUT, EXERCISE, GLOBAL_EXERCISE, NONE, EXIT_APP}
 
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
-const Version = "1.3.0"
+const Version = "1.3.1"
 
 var workouts: Array = []
 var exercises: Array = []
@@ -242,6 +242,10 @@ func build_workout_list() -> void:
 		row.add_child(edit_button)
 
 		list.add_child(row)
+		# Add separator line between workout items
+		var separator = HSeparator.new()
+		separator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		list.add_child(separator)
 
 func build_global_exercise_list() -> void:
 	var list = $AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseListContainer/ExerciseScrollWrapper/ExerciseListMain
@@ -280,20 +284,16 @@ func build_global_exercise_list() -> void:
 
 		var view_button = Button.new()
 		view_button.text = "View"
-		# view_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		# view_button.focus_mode = Control.FOCUS_NONE
 		view_button.pressed.connect(Callable(self, "_on_ExerciseItem_pressed").bind(exercise_index))
 		row.add_child(view_button)
 		
 		var edit_button = Button.new()
 		edit_button.text = "Edit"
-		# edit_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		edit_button.pressed.connect(Callable(self, "_on_EditGlobalExerciseButton_pressed").bind(exercise_index))
 		row.add_child(edit_button)
 
 		var delete_button = Button.new()
 		delete_button.text = "Del"
-		# delete_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		delete_button.pressed.connect(Callable(self, "_on_DeleteGlobalExerciseButton_pressed").bind(exercise_index))
 		row.add_child(delete_button)
 		
@@ -301,6 +301,11 @@ func build_global_exercise_list() -> void:
 			exercise_name.text = "⚠ " + exercise_name.text
 		
 		list.add_child(row)
+
+		# Add separator line between exercise items
+		var separator = HSeparator.new()
+		separator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		list.add_child(separator)
 
 func set_version() -> void:
 	$AppPanel/MainPanel/TabContainer/SettingsTab/Version.text = "Version: %s" % Version
@@ -483,6 +488,11 @@ func build_exercise_list() -> void:
 
 		list.add_child(row)
 
+		# Add separator line between exercise items
+		var separator = HSeparator.new()
+		separator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		list.add_child(separator)
+
 func _on_WorkoutItem_pressed(index: int) -> void:
 	open_workout_editor(index)
 
@@ -536,9 +546,15 @@ func build_exercise_history_list(exercise_name: String) -> void:
 		var reps_label = Label.new()
 		reps_label.text = entry.get("reps", "")
 		reps_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		reps_label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 		row.add_child(reps_label)
 
 		list.add_child(row)
+
+		# Add separator line between history items
+		var separator = HSeparator.new()
+		separator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		list.add_child(separator)
 
 func _compare_exercise_indices_by_name(a: int, b: int) -> bool:
 	# The function should return true if the first element should be moved before the second one, otherwise it should return false

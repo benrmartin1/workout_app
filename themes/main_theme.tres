@@ -114,4 +114,4 @@ Label/font_sizes/font_size = 45
 Label/fonts/font = ExtResource("1_vu6l5")
 Label/styles/focus = SubResource("StyleBoxFlat_ydht1")
 Label/styles/normal = SubResource("StyleBoxEmpty_rjgu6")
-VBoxContainer/constants/separation = 25
+VBoxContainer/constants/separation = 10
