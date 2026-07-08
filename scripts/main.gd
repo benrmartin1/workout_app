@@ -3,7 +3,7 @@ extends Control
 enum DELETE_ACTION {WORKOUT, EXERCISE, GLOBAL_EXERCISE, NONE, EXIT_APP}
 
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
-const Version = "1.3.1"
+const Version = "1.3.2"
 
 var workouts: Array = []
 var exercises: Array = []
@@ -237,7 +237,7 @@ func build_workout_list() -> void:
 		row.add_child(summary)
 
 		var edit_button = Button.new()
-		edit_button.text = "Edit"
+		edit_button.text = " ✏️ "
 		edit_button.pressed.connect(Callable(self, "_on_WorkoutItem_pressed").bind(index))
 		row.add_child(edit_button)
 
@@ -283,17 +283,17 @@ func build_global_exercise_list() -> void:
 		row.add_child(exercise_name)
 
 		var view_button = Button.new()
-		view_button.text = "View"
+		view_button.text = " 👀 "
 		view_button.pressed.connect(Callable(self, "_on_ExerciseItem_pressed").bind(exercise_index))
 		row.add_child(view_button)
 		
 		var edit_button = Button.new()
-		edit_button.text = "Edit"
+		edit_button.text = " ✏️ "
 		edit_button.pressed.connect(Callable(self, "_on_EditGlobalExerciseButton_pressed").bind(exercise_index))
 		row.add_child(edit_button)
 
 		var delete_button = Button.new()
-		delete_button.text = "Del"
+		delete_button.text = " 🗑️ "
 		delete_button.pressed.connect(Callable(self, "_on_DeleteGlobalExerciseButton_pressed").bind(exercise_index))
 		row.add_child(delete_button)
 		
@@ -472,7 +472,7 @@ func build_exercise_list() -> void:
 		row.add_child(summary)
 
 		var edit_button = Button.new()
-		edit_button.text = "Edit"
+		edit_button.text = " ✏️ "
 		edit_button.pressed.connect(Callable(self, "_on_EditExerciseButton_pressed").bind(exercise_index))
 		row.add_child(edit_button)
 

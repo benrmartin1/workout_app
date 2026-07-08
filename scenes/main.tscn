@@ -157,6 +157,9 @@ text = "Version X"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="HSeparator1" type="HSeparator" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=1801957304]
+layout_mode = 2
+
 [node name="ExportWorkoutsButton" type="Button" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=97716147]
 layout_mode = 2
 size_flags_horizontal = 4
@@ -167,16 +170,23 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "Export exercises data"
 
+[node name="HSeparator2" type="HSeparator" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=1069094416]
+layout_mode = 2
+
 [node name="AutoBackupButton" type="Button" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=1938411661]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Create backup in userdata"
 
 [node name="BackupStatus" type="Label" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=1719122568]
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 text = "Last backup: n/a"
 horizontal_alignment = 1
 autowrap_mode = 1
+
+[node name="HSeparator3" type="HSeparator" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=589565831]
+layout_mode = 2
 
 [node name="WorkoutEditor" type="PanelContainer" parent="AppPanel" unique_id=1482033206]
 visible = false
@@ -408,6 +418,7 @@ layout_mode = 2
 text = "Save"
 
 [node name="GlobalExerciseDetails" type="PanelContainer" parent="AppPanel" unique_id=518855336]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
