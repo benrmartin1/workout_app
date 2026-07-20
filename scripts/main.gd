@@ -2,7 +2,7 @@ extends Control
 
 
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
-const Version = "1.3.4"
+const Version = "1.3.5"
 
 var workouts: Array = []
 var exercises: Array = []
@@ -211,6 +211,53 @@ func _get_workout_exercises() -> Array:
 	print("[DEBUG] _get_workout_exercises created new, exercises_list: ", exercises_list.size(), ", list: ", exercises_list)
 	return exercises_list
 
+func _get_workout_category_counts(workout: Dictionary) -> String:
+	var workout_exercises = workout.get("exercises", [])
+	if workout_exercises is not Array:
+		return "Error: Invalid exercises data"
+
+	# Dictionary of category_id to count of exercises in that category
+	var category_counts_dict: Dictionary = {}
+	for exercise in workout_exercises:
+		if exercise is not Dictionary:
+			continue
+
+		var exercise_name = exercise.get("name", "").strip_edges()
+		var category_id = -1
+		for global_exercise in exercises:
+			if global_exercise is Dictionary and global_exercise.get("name", "").strip_edges() == exercise_name:
+				category_id = global_exercise.get("category", -1)
+				break
+
+		if not category_counts_dict.has(category_id):
+			category_counts_dict[category_id] = 0
+		category_counts_dict[category_id] += 1
+
+	var category_entries: Array = []
+	for category_id in category_counts_dict.keys():
+		category_entries.append([category_id, category_counts_dict[category_id]])
+	# Ensure that the category entries are sorted by category ID for consistent display
+	category_entries.sort_custom(_compare_category_count_entries)
+
+	var category_counts_str = ""
+	for entry in category_entries:
+		var category_id = entry[0]
+		var category_count = entry[1]
+		if category_counts_str != "":
+			category_counts_str += ", "
+		category_counts_str += "%d %s" % [category_count, _get_category_name(category_id)]
+
+	return category_counts_str
+
+func _compare_category_count_entries(a: Array, b: Array) -> bool:
+	return a[0] < b[0]
+
+func _get_category_name(category_id: int) -> String:
+	var dropdown = $AppPanel/GlobalExerciseEditor/VBoxContainer/CategoryRow/CategoryDropdown
+	if dropdown != null and category_id >= 0 and category_id < dropdown.get_item_count():
+		return dropdown.get_item_text(category_id)
+	return "Unknown"
+
 func build_workout_list() -> void:
 	var list = $AppPanel/MainPanel/TabContainer/WorkoutTab/ScrollWrapper/WorkoutList
 	while list.get_child_count() > 0:
@@ -229,12 +276,33 @@ func build_workout_list() -> void:
 		var row = HBoxContainer.new()
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
+		var summary_container = VBoxContainer.new()
+		summary_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		summary_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		row.add_child(summary_container)
+
 		var summary = Label.new()
-		var exercises_num = workout.get("exercises", []).size()
-		summary.text = "%s — %d exercise%s" % [workout.get("date", ""), exercises_num, "s" if exercises_num != 1 else ""]
 		summary.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 		summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(summary)
+		summary_container.add_child(summary)
+
+		var workout_exercises = workout.get("exercises", [])
+		var exercises_num = workout_exercises.size() if workout_exercises is Array else 0
+
+		var summary_text = "%s — %d exercise%s" % [workout.get("date", ""), exercises_num, "s" if exercises_num != 1 else ""]
+		summary.text = summary_text
+
+		var category_summary = _get_workout_category_counts(workout)
+		if category_summary != "":
+			var category_label = Label.new()
+			category_label.text = category_summary
+			category_label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+			category_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			category_label.max_lines_visible = 1
+			category_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			category_label.add_theme_color_override("font_color", Color.GRAY)
+			category_label.add_theme_font_size_override("font_size", 22)
+			summary_container.add_child(category_label)
 
 		var edit_button = Button.new()
 		edit_button.text = " ✏️ "
@@ -463,13 +531,16 @@ func build_exercise_list() -> void:
 		var row = HBoxContainer.new()
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
+		var summary_container = VBoxContainer.new()
+		summary_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		summary_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		row.add_child(summary_container)
+
 		var summary = Label.new()
 		summary.text = "%s — %s" % [exercise.get("name", "(no name)"), exercise.get("reps", "")]
-		# Allow long exercise names or reps to wrap onto multiple lines
 		summary.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-		# Keep the label filling available space so it wraps instead of expanding
 		summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(summary)
+		summary_container.add_child(summary)
 
 		var edit_button = Button.new()
 		edit_button.text = " ✏️ "
@@ -485,6 +556,19 @@ func build_exercise_list() -> void:
 				break
 		if not exercise_found or exercise_name == "":
 			summary.text = "⚠ " + summary.text
+
+		var notes = exercise.get("notes", "")
+		if notes.strip_edges() != "":
+			var notes_label = Label.new()
+			notes_label.text = notes
+			notes_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+			notes_label.clip_text = true
+			notes_label.max_lines_visible = 1
+			notes_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			notes_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			notes_label.add_theme_color_override("font_color", Color.GRAY)
+			notes_label.add_theme_font_size_override("font_size", 22)
+			summary_container.add_child(notes_label)
 
 		list.add_child(row)
 
