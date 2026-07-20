@@ -1,9 +1,8 @@
 extends Control
 
-enum DELETE_ACTION {WORKOUT, EXERCISE, GLOBAL_EXERCISE, NONE, EXIT_APP}
 
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
-const Version = "1.3.2"
+const Version = "1.3.4"
 
 var workouts: Array = []
 var exercises: Array = []
@@ -13,6 +12,7 @@ var editing_exercise_index: int = -1
 # Index of the exercise being edited, or -1 if adding a new exercise
 var editing_global_exercise_index: int = -1
 
+enum DELETE_ACTION {WORKOUT, EXERCISE, GLOBAL_EXERCISE, NONE, EXIT_APP}
 var pending_delete_action: DELETE_ACTION = DELETE_ACTION.NONE
 var pending_delete_index: int = -1
 
@@ -212,7 +212,7 @@ func _get_workout_exercises() -> Array:
 	return exercises_list
 
 func build_workout_list() -> void:
-	var list = $AppPanel/MainPanel/TabContainer/WorkoutTab/WorkoutListContainer/ScrollWrapper/WorkoutList
+	var list = $AppPanel/MainPanel/TabContainer/WorkoutTab/ScrollWrapper/WorkoutList
 	while list.get_child_count() > 0:
 		list.get_child(0).free()
 
@@ -248,7 +248,7 @@ func build_workout_list() -> void:
 		list.add_child(separator)
 
 func build_global_exercise_list() -> void:
-	var list = $AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseListContainer/ExerciseScrollWrapper/ExerciseListMain
+	var list = $AppPanel/MainPanel/TabContainer/ExerciseTab/ExerciseScrollWrapper/ExerciseListMain
 	while list.get_child_count() > 0:
 		list.get_child(0).free()
 
@@ -284,7 +284,7 @@ func build_global_exercise_list() -> void:
 
 		var view_button = Button.new()
 		view_button.text = " 👀 "
-		view_button.pressed.connect(Callable(self, "_on_ExerciseItem_pressed").bind(exercise_index))
+		view_button.pressed.connect(Callable(self, "_on_GlobalExerciseItem_pressed").bind(exercise_index))
 		row.add_child(view_button)
 		
 		var edit_button = Button.new()
@@ -446,7 +446,7 @@ func open_workout_editor(index: int) -> void:
 
 func build_exercise_list() -> void:
 	print("[DEBUG] build_exercise_list start")
-	var list = $AppPanel/WorkoutEditor/VBoxContainer/ExerciseListContainer/ExerciseScroll/ExerciseList
+	var list = $AppPanel/WorkoutEditor/VBoxContainer/ExerciseScroll/ExerciseList
 	if list == null:
 		print("[DEBUG] build_exercise_list list is null")
 		return
@@ -496,15 +496,16 @@ func build_exercise_list() -> void:
 func _on_WorkoutItem_pressed(index: int) -> void:
 	open_workout_editor(index)
 
-func _on_ExerciseItem_pressed(index: int) -> void:
+func _on_GlobalExerciseItem_pressed(index: int) -> void:
 	if index < 0 or index >= exercises.size():
+		print("[DEBUG] invalid exercise index", index)
 		return
 	var exercise_name = exercises[index].get("name", "")
-	print("[DEBUG] _on_ExerciseItem_pressed", index, exercise_name)
+	print("[DEBUG] _on_GlobalExerciseItem_pressed", index, exercise_name)
 	show_exercise_details(exercise_name)
 
 func build_exercise_history_list(exercise_name: String) -> void:
-	var list = $AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseListContainer/ExerciseScroll/ExerciseList
+	var list = $AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseScroll/ExerciseList
 	while list.get_child_count() > 0:
 		list.get_child(0).free()
 
@@ -609,6 +610,7 @@ func _on_DeleteExerciseButton_pressed() -> void:
 	show_confirmation("Delete exercise", "Delete this exercise from the workout?")
 
 func _on_AddExerciseButton_pressed() -> void:
+	editing_exercise_index = -1 # Reset editing index to indicate adding a new exercise
 	var dropdown = $AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown
 	# Add exercise list to dropdown
 	dropdown.clear()
