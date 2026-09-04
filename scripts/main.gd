@@ -2,7 +2,7 @@ extends Control
 
 
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
-const Version = "1.3.5"
+const Version = "1.3.6"
 
 var workouts: Array = []
 var exercises: Array = []
@@ -35,7 +35,6 @@ func _commit_workout_changes() -> void:
 		workouts[editing_workout_index] = edit_workout.duplicate(true)
 	elif editing_workout_index < 0:
 		workouts.append(edit_workout.duplicate(true))
-		editing_workout_index = workouts.size() - 1
 
 	# Keep the current edit index stable while the workout editor is open.
 	# Re-sorting will happen when returning to the main screen.
@@ -178,7 +177,6 @@ func load_workouts() -> void:
 	print("[DEBUG] load_workouts start")
 	workouts = WorkoutStorage.load_workouts()
 	print("[DEBUG] load_workouts finished, workouts size: ", workouts.size())
-	print("[DEBUG] sort_workouts finished")
 
 func load_exercises() -> void:
 	print("[DEBUG] load_exercises start")
@@ -351,7 +349,7 @@ func build_global_exercise_list() -> void:
 		row.add_child(exercise_name)
 
 		var view_button = Button.new()
-		view_button.text = " 👀 "
+		view_button.text = " 📜 "
 		view_button.pressed.connect(Callable(self, "_on_GlobalExerciseItem_pressed").bind(exercise_index))
 		row.add_child(view_button)
 		
@@ -387,6 +385,7 @@ func _on_ExerciseEditor_field_changed(_arg = null) -> void:
 	_set_exercise_dirty(true)
 
 func _on_ExerciseDropdown_selected(_index: int) -> void:
+	print("[DEBUG] _on_ExerciseDropdown_selected index: ", _index)
 	var exercise_name = $AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown.text
 	var previous_reps = _get_previous_exercise_reps(exercise_name)
 	$AppPanel/ExerciseEditor/VBoxContainer/PreviousRepsRow/RepsEdit.text = previous_reps
@@ -397,7 +396,7 @@ func _on_ExerciseSort_selected(index: int) -> void:
 	build_global_exercise_list()
 
 func _get_previous_exercise_reps(exercise_name: String) -> String:
-	# Search through workouts in order, starting on the current workout index - 1
+	# Search through workouts in order, starting on the current workout index + 1
 	print("[DEBUG] _get_previous_exercise_reps ", exercise_name, " in workout ", editing_workout_index)
 	for workout_idx in range(editing_workout_index + 1, workouts.size()):
 		var workout = workouts[workout_idx]

@@ -7,6 +7,7 @@ Basic offline workout tracker.
 ### High
 
 ### Med
+ - Import feature
 
 ### Low
 - Show error message when saving an incomplete workout/exercise 
@@ -14,3 +15,7 @@ Basic offline workout tracker.
 - Drag sort for global exercise list and workout exercise list. Updates the default sorting (stored in json)
 - When adding dates, optionally pick from a calendar widget instead of typing date by hand
 - Export to google drive if possible
+
+# Screenshots
+
+![main page](images/main.png)
