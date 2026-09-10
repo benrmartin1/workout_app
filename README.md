@@ -8,6 +8,7 @@ Basic offline workout tracker.
 
 ### Med
  - Import feature
+ - Duplicate past workout
 
 ### Low
 - Show error message when saving an incomplete workout/exercise 

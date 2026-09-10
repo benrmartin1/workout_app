@@ -2,7 +2,7 @@ extends Control
 
 
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
-const Version = "1.3.7"
+const Version = "1.4.0"
 
 var workouts: Array = []
 var exercises: Array = []
@@ -13,6 +13,7 @@ var editing_workout_index: int = -1
 var editing_exercise_index: int = -1
 # Index of the exercise being edited, or -1 if adding a new exercise
 var editing_global_exercise_index: int = -1
+var duplicated_workout: Dictionary = {}
 
 enum DELETE_ACTION {WORKOUT, EXERCISE, GLOBAL_EXERCISE, NONE, EXIT_APP}
 var pending_delete_action: DELETE_ACTION = DELETE_ACTION.NONE
@@ -34,13 +35,21 @@ func _commit_new_workout() -> bool:
 		print("[ERROR] _commit_new_workout: Date cannot be empty")
 		return false
 
-	var new_workout = {
-		"date": date_text,
-		"exercises": []
-	}
+
+	var new_workout = {}
+	if not duplicated_workout.is_empty():
+		new_workout = duplicated_workout.duplicate(true)
+		new_workout["date"] = date_text
+	else:
+		new_workout = {
+			"date": date_text,
+			"exercises": []
+		}
+	_normalize_workout_data(new_workout)
 	workouts.append(new_workout)
 
 	WorkoutStorage.save_workouts(workouts)
+	duplicated_workout = {}
 	workout_dirty = false
 	return true
 
@@ -115,6 +124,7 @@ func _ready() -> void:
 	$AppPanel/WorkoutEditor/VBoxContainer/ExerciseHeader/AddExerciseButton.pressed.connect(Callable(self, "_on_AddExerciseButton_pressed"))
 	$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/BackWorkoutButton.pressed.connect(Callable(self, "_on_BackWorkoutButton_pressed"))
 	$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/DeleteWorkoutButton.pressed.connect(Callable(self, "_on_DeleteWorkoutButton_pressed"))
+	$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/DuplicateWorkoutButton.pressed.connect(Callable(self, "_on_DuplicateWorkoutButton_pressed"))
 	
 	# Exercise editor buttons
 	$AppPanel/ExerciseEditor/VBoxContainer/ExerciseButtonBar/SaveExerciseButton.pressed.connect(Callable(self, "_on_SaveExerciseButton_pressed"))
@@ -444,7 +454,7 @@ func _on_GlobalExerciseEditor_field_changed(_arg = null) -> void:
 	_set_global_exercise_dirty(true)
 
 func _on_AddWorkoutButton_pressed() -> void:
-	open_new_workout_panel()
+	open_new_workout_panel({})
 
 func _on_AddGlobalExerciseButton_pressed() -> void:
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Global Exercise"
@@ -544,11 +554,15 @@ func open_workout_editor(index: int) -> void:
 	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text = edit_workout["date"]
 	show_edit_workout_screen()
 
-func open_new_workout_panel() -> void:
-	print("[DEBUG] open_new_workout_panel")
+func open_new_workout_panel(new_duplicated_workout: Dictionary) -> void:
+	print("[DEBUG] open_new_workout_panel with duplicated_workout: ", new_duplicated_workout)
 	editing_workout_index = -1
 	_set_workout_dirty(false)
 	edit_workout = {}
+	if not new_duplicated_workout.is_empty():
+		duplicated_workout = new_duplicated_workout.duplicate(true)
+	else:
+		duplicated_workout = {}
 
 	$AppPanel/NewWorkoutPanel/VBoxContainer/DateRow/DateEdit.text = _get_today_date()
 	show_add_workout_screen()
@@ -894,6 +908,18 @@ func _on_DeleteWorkoutButton_pressed() -> void:
 		pending_delete_action = DELETE_ACTION.WORKOUT
 		pending_delete_index = editing_workout_index
 		show_confirmation("Delete workout", "Delete this workout and all recorded exercises?")
+
+func _on_DuplicateWorkoutButton_pressed() -> void:
+	if editing_workout_index < 0 or editing_workout_index >= workouts.size():
+		print("[ERROR] _on_DuplicateWorkoutButton_pressed: Invalid editing_workout_index: ", editing_workout_index)
+		return
+
+	if workout_dirty and not _commit_workout_changes():
+		return
+
+	duplicated_workout = edit_workout.duplicate(true)
+	_normalize_workout_data(duplicated_workout)
+	open_new_workout_panel(duplicated_workout)
 
 func _on_ConfirmDialog_confirmed() -> void:
 	print("[DEBUG] _on_ConfirmDialog_confirmed, action: ", pending_delete_action, " index: ", pending_delete_index)
