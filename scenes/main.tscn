@@ -186,6 +186,55 @@ autowrap_mode = 1
 [node name="HSeparator3" type="HSeparator" parent="AppPanel/MainPanel/TabContainer/SettingsTab" unique_id=589565831]
 layout_mode = 2
 
+[node name="NewWorkoutPanel" type="PanelContainer" parent="AppPanel" unique_id=54199826]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AppPanel/NewWorkoutPanel" unique_id=1246853593]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="WorkoutEditorTitle" type="Label" parent="AppPanel/NewWorkoutPanel/VBoxContainer" unique_id=2078936082]
+layout_mode = 2
+text = "Add Workout"
+label_settings = ExtResource("3_jyhfs")
+
+[node name="DateRow" type="HBoxContainer" parent="AppPanel/NewWorkoutPanel/VBoxContainer" unique_id=1467706520]
+layout_mode = 2
+
+[node name="DateLabel" type="Label" parent="AppPanel/NewWorkoutPanel/VBoxContainer/DateRow" unique_id=905170232]
+layout_mode = 2
+text = "Date"
+
+[node name="DateEdit" type="LineEdit" parent="AppPanel/NewWorkoutPanel/VBoxContainer/DateRow" unique_id=1926715704]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "YYYY-MM-DD"
+
+[node name="DateDoneButton" type="Button" parent="AppPanel/NewWorkoutPanel/VBoxContainer/DateRow" unique_id=1408684665]
+layout_mode = 2
+disabled = true
+text = "Okay"
+
+[node name="EditorButtonBar" type="HBoxContainer" parent="AppPanel/NewWorkoutPanel/VBoxContainer" unique_id=437405267]
+layout_mode = 2
+theme_override_constants/separation = 26
+
+[node name="BackWorkoutButton" type="Button" parent="AppPanel/NewWorkoutPanel/VBoxContainer/EditorButtonBar" unique_id=2058760601]
+layout_mode = 2
+text = "Back"
+
+[node name="SaveNewWorkoutButton" type="Button" parent="AppPanel/NewWorkoutPanel/VBoxContainer/EditorButtonBar" unique_id=1292581162]
+layout_mode = 2
+text = "Save"
+
+[node name="HappyMessage" type="Label" parent="AppPanel/NewWorkoutPanel/VBoxContainer" unique_id=2043779876]
+layout_mode = 2
+text = "Enjoy your workout :) "
+horizontal_alignment = 1
+
 [node name="WorkoutEditor" type="PanelContainer" parent="AppPanel" unique_id=1482033206]
 visible = false
 layout_mode = 2
@@ -199,7 +248,7 @@ size_flags_vertical = 3
 
 [node name="WorkoutEditorTitle" type="Label" parent="AppPanel/WorkoutEditor/VBoxContainer" unique_id=139145349]
 layout_mode = 2
-text = "Add Workout"
+text = "Edit Workout"
 label_settings = ExtResource("3_jyhfs")
 
 [node name="DateRow" type="HBoxContainer" parent="AppPanel/WorkoutEditor/VBoxContainer" unique_id=1076329881]
@@ -331,7 +380,6 @@ layout_mode = 2
 text = "Save"
 
 [node name="DeleteExerciseButton" type="Button" parent="AppPanel/ExerciseEditor/VBoxContainer/ExerciseButtonBar" unique_id=1515843643]
-visible = false
 layout_mode = 2
 text = "Delete"
 

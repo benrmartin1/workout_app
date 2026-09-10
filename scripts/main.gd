@@ -2,10 +2,12 @@ extends Control
 
 
 const WorkoutStorage = preload("res://scripts/workout_storage.gd")
-const Version = "1.3.6"
+const Version = "1.3.7"
 
 var workouts: Array = []
 var exercises: Array = []
+
+# TODO: Make obj to store current edit state for workout and exercise editor, instead of using global vars
 var edit_workout: Dictionary = {}
 var editing_workout_index: int = -1
 var editing_exercise_index: int = -1
@@ -25,21 +27,43 @@ var exercise_dirty: bool = false
 var global_exercise_dirty: bool = false
 var export_dialog: FileDialog
 
-func _commit_workout_changes() -> void:
+func _commit_new_workout() -> bool:
+	# Commit the new workout to the workouts list and save it
+	var date_text = $AppPanel/NewWorkoutPanel/VBoxContainer/DateRow/DateEdit.text.strip_edges()
+	if date_text == "":
+		print("[ERROR] _commit_new_workout: Date cannot be empty")
+		return false
+
+	var new_workout = {
+		"date": date_text,
+		"exercises": []
+	}
+	workouts.append(new_workout)
+
+	WorkoutStorage.save_workouts(workouts)
+	workout_dirty = false
+	return true
+
+func _commit_workout_changes() -> bool:
 	print("[DEBUG] _commit_workout_changes start, editing_workout_index: ", editing_workout_index)
+
+	if editing_workout_index < 0 or editing_workout_index >= workouts.size():
+		print("[ERROR] _commit_workout_changes: Invalid editing_workout_index: ", editing_workout_index)
+		return false
+
 	var date_text = $AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text.strip_edges()
+	if date_text == "":
+		print("[ERROR] _commit_workout_changes: Date cannot be empty")
+		return false
 	edit_workout["date"] = date_text
 	_normalize_workout_data(edit_workout)
-
-	if editing_workout_index >= 0 and editing_workout_index < workouts.size():
-		workouts[editing_workout_index] = edit_workout.duplicate(true)
-	elif editing_workout_index < 0:
-		workouts.append(edit_workout.duplicate(true))
+	workouts[editing_workout_index] = edit_workout.duplicate(true)
 
 	# Keep the current edit index stable while the workout editor is open.
 	# Re-sorting will happen when returning to the main screen.
 	WorkoutStorage.save_workouts(workouts)
 	workout_dirty = false
+	return true
 
 func _set_workout_dirty(dirty: bool) -> void:
 	workout_dirty = dirty
@@ -78,10 +102,16 @@ func _ready() -> void:
 	$AppPanel/MainPanel/TabContainer/SettingsTab/ExportExercisesButton.pressed.connect(Callable(self, "_on_ExportExercisesButton_pressed"))
 	$AppPanel/MainPanel/TabContainer/SettingsTab/AutoBackupButton.pressed.connect(Callable(self, "_on_AutoBackupButton_pressed"))
 
+	# New Workout panel buttons
+	$AppPanel/NewWorkoutPanel/VBoxContainer/DateRow/DateDoneButton.pressed.connect(Callable(self, "_on_NewWorkoutDateDoneButton_pressed"))
+	$AppPanel/NewWorkoutPanel/VBoxContainer/DateRow/DateEdit.focus_entered.connect(Callable(self, "_on_NewWorkoutDateEdit_focus_entered"))
+	$AppPanel/NewWorkoutPanel/VBoxContainer/EditorButtonBar/BackWorkoutButton.pressed.connect(Callable(self, "_on_BackWorkoutButton_pressed"))
+	$AppPanel/NewWorkoutPanel/VBoxContainer/EditorButtonBar/SaveNewWorkoutButton.pressed.connect(Callable(self, "_on_SaveNewWorkoutButton_pressed"))
+
 	# Workout editor buttons
-	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateDoneButton.pressed.connect(Callable(self, "_on_DateDoneButton_pressed"))
-	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.focus_entered.connect(Callable(self, "_on_DateEdit_focus_entered"))
-	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.focus_exited.connect(Callable(self, "_on_DateEdit_focus_exited"))
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateDoneButton.pressed.connect(Callable(self, "_on_WorkoutEditorDateDoneButton_pressed"))
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.focus_entered.connect(Callable(self, "_on_WorkoutEditorDateEdit_focus_entered"))
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.focus_exited.connect(Callable(self, "_on_WorkoutEditorDateEdit_focus_exited"))
 	$AppPanel/WorkoutEditor/VBoxContainer/ExerciseHeader/AddExerciseButton.pressed.connect(Callable(self, "_on_AddExerciseButton_pressed"))
 	$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/BackWorkoutButton.pressed.connect(Callable(self, "_on_BackWorkoutButton_pressed"))
 	$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/DeleteWorkoutButton.pressed.connect(Callable(self, "_on_DeleteWorkoutButton_pressed"))
@@ -95,7 +125,7 @@ func _ready() -> void:
 	$AppPanel/ConfirmDialog.confirmed.connect(Callable(self, "_on_ConfirmDialog_confirmed"))
 
 	# Connect editor change signals to mark dirty state
-	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text_changed.connect(Callable(self, "_on_WorkoutEditor_field_changed"))
+	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text_changed.connect(Callable(self, "_on_WorkoutEditor_date_changed")) 
 	$AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown.item_selected.connect(Callable(self, "_on_ExerciseDropdown_selected"))
 	$AppPanel/ExerciseEditor/VBoxContainer/RepsRow/RepsEdit.text_changed.connect(Callable(self, "_on_ExerciseEditor_field_changed"))
 	$AppPanel/ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text_changed.connect(Callable(self, "_on_ExerciseEditor_field_changed"))
@@ -376,7 +406,7 @@ func build_global_exercise_list() -> void:
 func set_version() -> void:
 	$AppPanel/MainPanel/TabContainer/SettingsTab/Version.text = "Version: %s" % Version
 
-func _on_WorkoutEditor_field_changed(_arg: String) -> void:
+func _on_WorkoutEditor_date_changed(_arg: String) -> void:
 	var date_text = $AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text.strip_edges()
 	edit_workout["date"] = date_text
 	_set_workout_dirty(true)
@@ -414,7 +444,7 @@ func _on_GlobalExerciseEditor_field_changed(_arg = null) -> void:
 	_set_global_exercise_dirty(true)
 
 func _on_AddWorkoutButton_pressed() -> void:
-	open_workout_editor(-1)
+	open_new_workout_panel()
 
 func _on_AddGlobalExerciseButton_pressed() -> void:
 	$AppPanel/GlobalExerciseEditor/VBoxContainer/ExerciseEditorTitle.text = "Add Global Exercise"
@@ -425,7 +455,17 @@ func _on_AddGlobalExerciseButton_pressed() -> void:
 	_set_global_exercise_dirty(false)
 	show_globalexercise_editor()
 
-func _on_DateDoneButton_pressed() -> void:
+func _on_NewWorkoutDateDoneButton_pressed() -> void:
+	# Unfocus the date edit box to remove virtual keyboard on mobile devices
+	$AppPanel/NewWorkoutPanel/VBoxContainer/DateRow/DateEdit.release_focus()
+	# Disable date done button until the date edit box is focused again
+	$AppPanel/NewWorkoutPanel/VBoxContainer/DateRow/DateDoneButton.disabled = true
+
+func _on_NewWorkoutDateEdit_focus_entered() -> void:
+	# Enable date done button when the date edit box is focused
+	$AppPanel/NewWorkoutPanel/VBoxContainer/DateRow/DateDoneButton.disabled = false
+
+func _on_WorkoutEditorDateDoneButton_pressed() -> void:
 	# Unfocus the date edit box to remove virtual keyboard on mobile devices
 	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.release_focus()
 	# Disable date done button until the date edit box is focused again
@@ -433,11 +473,11 @@ func _on_DateDoneButton_pressed() -> void:
 	if workout_dirty:
 		_commit_workout_changes()
 
-func _on_DateEdit_focus_entered() -> void:
+func _on_WorkoutEditorDateEdit_focus_entered() -> void:
 	# Enable date done button when the date edit box is focused
 	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateDoneButton.disabled = false
 
-func _on_DateEdit_focus_exited() -> void:
+func _on_WorkoutEditorDateEdit_focus_exited() -> void:
 	if workout_dirty:
 		_commit_workout_changes()
 
@@ -445,47 +485,44 @@ func _get_today_date() -> String:
 	var now = Time.get_datetime_dict_from_system()
 	return "%04d-%02d-%02d" % [now.year, now.month, now.day]
 
+func hide_panels() -> void:
+	$AppPanel/MainPanel.hide()
+	$AppPanel/WorkoutEditor.hide()
+	$AppPanel/NewWorkoutPanel.hide()
+	$AppPanel/ExerciseEditor.hide()
+	$AppPanel/GlobalExerciseEditor.hide()
+	$AppPanel/GlobalExerciseDetails.hide()
+
 func show_main_screen() -> void:
 	if workout_dirty:
 		_commit_workout_changes()
 	sort_workouts()
 	build_workout_list()
 	build_global_exercise_list()
+	hide_panels()
 	$AppPanel/MainPanel.show()
-	$AppPanel/WorkoutEditor.hide()
-	$AppPanel/ExerciseEditor.hide()
-	$AppPanel/GlobalExerciseEditor.hide()
-	$AppPanel/GlobalExerciseDetails.hide()
 
-func show_workout_screen() -> void:
+func show_add_workout_screen() -> void:
+	hide_panels()
+	$AppPanel/NewWorkoutPanel.show()
+
+func show_edit_workout_screen() -> void:
 	build_exercise_list()
-	$AppPanel/MainPanel.hide()
+	hide_panels()
 	$AppPanel/WorkoutEditor.show()
-	$AppPanel/ExerciseEditor.hide()
-	$AppPanel/GlobalExerciseEditor.hide()
-	$AppPanel/GlobalExerciseDetails.hide()
 
 func show_exercise_editor() -> void:
-	$AppPanel/MainPanel.hide()
-	$AppPanel/WorkoutEditor.hide()
+	hide_panels()
 	$AppPanel/ExerciseEditor.show()
-	$AppPanel/GlobalExerciseEditor.hide()
-	$AppPanel/GlobalExerciseDetails.hide()
 
 func show_globalexercise_editor() -> void:
-	$AppPanel/MainPanel.hide()
-	$AppPanel/WorkoutEditor.hide()
-	$AppPanel/ExerciseEditor.hide()
+	hide_panels()
 	$AppPanel/GlobalExerciseEditor.show()
-	$AppPanel/GlobalExerciseDetails.hide()
 
 func show_exercise_details(exercise_name: String) -> void:
 	$AppPanel/GlobalExerciseDetails/VBoxContainer/ExerciseDetailsTitle.text = exercise_name
 	build_exercise_history_list(exercise_name)
-	$AppPanel/MainPanel.hide()
-	$AppPanel/WorkoutEditor.hide()
-	$AppPanel/ExerciseEditor.hide()
-	$AppPanel/GlobalExerciseEditor.hide()
+	hide_panels()
 	$AppPanel/GlobalExerciseDetails.show()
 
 func _on_CancelExerciseDetailsButton_pressed() -> void:
@@ -493,23 +530,28 @@ func _on_CancelExerciseDetailsButton_pressed() -> void:
 
 func open_workout_editor(index: int) -> void:
 	print("[DEBUG] open_workout_editor with index: ", index)
+	if index < 0 or index >= workouts.size():
+		print("[ERROR] Invalid workout index")
+		return
 	editing_workout_index = index
 
 	# Reset dirty state when opening editor
 	_set_workout_dirty(false)
-	if index >= 0 and index < workouts.size():
-		edit_workout = workouts[index].duplicate(true)
-		_normalize_workout_data(edit_workout)
-		$AppPanel/WorkoutEditor/VBoxContainer/WorkoutEditorTitle.text = "Edit Workout"
-		$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/DeleteWorkoutButton.visible = true
-	else:
-		edit_workout = {"date": _get_today_date(), "exercises": []}
-		$AppPanel/WorkoutEditor/VBoxContainer/WorkoutEditorTitle.text = "Add Workout"
-		$AppPanel/WorkoutEditor/VBoxContainer/EditorButtonBar/DeleteWorkoutButton.visible = false
+	edit_workout = workouts[index].duplicate(true)
+	_normalize_workout_data(edit_workout)
 
 	print("[DEBUG] current edit_workout", edit_workout)
 	$AppPanel/WorkoutEditor/VBoxContainer/DateRow/DateEdit.text = edit_workout["date"]
-	show_workout_screen()
+	show_edit_workout_screen()
+
+func open_new_workout_panel() -> void:
+	print("[DEBUG] open_new_workout_panel")
+	editing_workout_index = -1
+	_set_workout_dirty(false)
+	edit_workout = {}
+
+	$AppPanel/NewWorkoutPanel/VBoxContainer/DateRow/DateEdit.text = _get_today_date()
+	show_add_workout_screen()
 
 func build_exercise_list() -> void:
 	print("[DEBUG] build_exercise_list start")
@@ -744,12 +786,12 @@ func _on_SaveExerciseButton_pressed() -> void:
 	var notes = $AppPanel/ExerciseEditor/VBoxContainer/NotesRow/NotesEdit.text.strip_edges()
 
 	if $AppPanel/ExerciseEditor/VBoxContainer/NameRow/NameDropdown.get_selected() < 0:
-		print("[DEBUG] no exercise selected from dropdown, abort save")
+		print("[ERROR] no exercise selected from dropdown, abort save")
 		# TODO: show error in the app
 		return
 
 	if ename == "":
-		print("[DEBUG] empty exercise name, abort save")
+		print("[ERROR] empty exercise name, abort save")
 		# TODO: show error in the app
 		return
 
@@ -769,19 +811,17 @@ func _on_SaveExerciseButton_pressed() -> void:
 		workout_exercises[editing_exercise_index] = exercise
 	else:
 		workout_exercises.append(exercise)
-	edit_workout["exercises"] = workout_exercises
 	editing_exercise_index = -1
 
 	# Saving an exercise edits the current workout; persist it immediately once the edit is complete
 	_set_exercise_dirty(false)
 	edit_workout["exercises"] = workout_exercises
 	_commit_workout_changes()
-	show_workout_screen()
-	print("[DEBUG] _on_SaveExerciseButton_pressed after show_workout_screen")
+	show_edit_workout_screen()
 
 func _on_CancelExerciseButton_pressed() -> void:
 	_set_exercise_dirty(false)
-	show_workout_screen()
+	show_edit_workout_screen()
 
 func _on_SaveGlobalExerciseButton_pressed() -> void:
 	var ename = $AppPanel/GlobalExerciseEditor/VBoxContainer/NameRow/NameEdit.text.strip_edges()
@@ -795,14 +835,14 @@ func _on_SaveGlobalExerciseButton_pressed() -> void:
 	}
 
 	if ename == "" or category_index < 0:
-		print("[DEBUG] empty exercise name or invalid category, abort save")
+		print("[ERROR] empty exercise name or invalid category, abort save")
 		# TODO: show error in the app
 		return
 
 	# Ensure exercise does not already exist
 	for i in range(exercises.size()):
 		if i != editing_global_exercise_index and exercises[i]["name"] == ename:
-			print("[DEBUG] Exercise with name '%s' already exists, cannot save." % ename)
+			print("[ERROR] Exercise with name '%s' already exists, cannot save." % ename)
 			# TODO: show error in the app
 			return
 
@@ -840,6 +880,15 @@ func _on_CancelGlobalExerciseButton_pressed() -> void:
 func _on_BackWorkoutButton_pressed() -> void:
 	show_main_screen()
 
+func _on_SaveNewWorkoutButton_pressed() -> void:
+	if _commit_new_workout():
+		show_main_screen()
+
+func _on_SaveWorkoutButton_pressed() -> void:
+	# If commit fails, stay on the workout editor screen for user to correct issues
+	if _commit_workout_changes():
+		show_main_screen()
+
 func _on_DeleteWorkoutButton_pressed() -> void:
 	if editing_workout_index >= 0 and editing_workout_index < workouts.size():
 		pending_delete_action = DELETE_ACTION.WORKOUT
@@ -864,7 +913,7 @@ func _on_ConfirmDialog_confirmed() -> void:
 				# Persist the workout immediately after removing an exercise
 				_commit_workout_changes()
 				editing_exercise_index = -1
-				show_workout_screen()
+				show_edit_workout_screen()
 		DELETE_ACTION.GLOBAL_EXERCISE:
 			if pending_delete_index >= 0 and pending_delete_index < exercises.size():
 				exercises.remove_at(pending_delete_index)
